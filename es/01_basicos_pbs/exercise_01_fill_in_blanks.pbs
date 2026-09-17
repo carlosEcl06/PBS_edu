@@ -1,0 +1,41 @@
+#!/bin/bash
+# Ejercicio 1: completa los espacios en blanco (marcados ___) para que esto
+# sea un trabajo PBS válido y funcional, luego envíalo con
+# `qsub exercise_01_fill_in_blanks.pbs`.
+#
+# Objetivo: un trabajo que pida 2 CPUs y 2GB de RAM, corra por máximo 2
+# minutos, imprima en qué nodo cayó, cuente hasta 5 con una pausa de 1
+# segundo entre cada número, y escriba su salida en archivos nombrados según
+# el propio trabajo.
+
+# Nota: en esta configuración de PBS, las líneas de directiva #PBS NO admiten
+# comentarios al final de línea -- el resto de la línea completa se
+# interpreta como texto de la directiva. Por eso las pistas de abajo están
+# en líneas de comentario separadas.
+
+# dale un nombre corto y descriptivo
+#PBS -N ___
+#PBS -q workq
+# 2 CPUs, 2GB de RAM
+#PBS -l select=1:ncpus=___:mem=___gb
+# 2 minutos
+#PBS -l walltime=00:0___:00
+# que coincida con el nombre del trabajo de arriba
+#PBS -o ___.out
+#PBS -e ___.err
+
+echo "Corriendo en $(___)"                      # pista: mismo comando usado en el ejemplo
+
+for i in $(seq 1 5); do
+    echo "cuenta: $i"
+    sleep ___                                 # 1 segundo
+done
+
+echo "Todo listo."
+
+# Una vez enviado:
+#   qstat -u $(whoami)          -- obsérvalo pasar de Q a R
+#   cat <tu archivo .out>       -- una vez que termine
+#
+# Revisa tu trabajo con exercise_01_ANSWER.pbs si algo no se envía
+# correctamente (qsub se queja fuerte y de inmediato si una línea #PBS está mal formada).

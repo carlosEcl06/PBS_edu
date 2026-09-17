@@ -1,0 +1,31 @@
+#!/bin/bash
+# Ejercicio 3: elige cualquier herramienta real de bioinformática que
+# podrías realmente necesitar (ej. seqkit, samtools, fastqc -- la que
+# prefieras) y encuentra su etiqueta exacta de biocontainers. Dos formas de
+# encontrar una:
+#   1. Busca en https://github.com/nf-core/modules "<herramienta>/main.nf"
+#      y mira la línea `container`.
+#   2. Navega directamente en https://biocontainers.pro/ o
+#      https://quay.io/organization/biocontainers
+# No uses ":latest" -- elige una etiqueta de versión específica.
+
+#PBS -N exercise_03
+#PBS -q workq
+#PBS -l select=1:ncpus=2:mem=4gb
+#PBS -l walltime=00:15:00
+#PBS -o exercise_03.out
+#PBS -e exercise_03.err
+
+set -x
+mkdir -p exercise_03_work
+cd exercise_03_work
+
+TOOL_CONTAINER="docker://quay.io/biocontainers/___:___"   # ej. seqkit:2.8.2--h9ee0642_0
+
+apptainer pull --force tool.sif "$TOOL_CONTAINER"
+apptainer exec tool.sif ___ --version                      # el nombre real del comando de la herramienta
+
+# Extra, una vez que lo anterior funcione: copia un archivo de texto pequeño
+# a este directorio y ejecuta la herramienta sobre él usando una ruta
+# RELATIVA (ver la sección sobre bind mounts en el README para entender por
+# qué relativa, y no absoluta, es la opción segura por defecto).

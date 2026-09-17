@@ -1,0 +1,40 @@
+#!/bin/bash
+# Exercício 1: preencha as lacunas (marcadas ___) para tornar isto um job PBS
+# válido e funcional, depois submeta com
+# `qsub exercise_01_fill_in_blanks.pbs`.
+#
+# Objetivo: um job que pede 2 CPUs e 2GB de RAM, roda por no máximo 2 minutos,
+# imprime em qual nó ele caiu, conta até 5 com uma pausa de 1 segundo entre
+# cada número, e escreve sua saída em arquivos nomeados a partir do próprio job.
+
+# Nota: nesta configuração de PBS, linhas de diretiva #PBS NÃO suportam
+# comentários no final da linha -- o resto da linha inteira é interpretado
+# como texto da diretiva. Por isso as dicas abaixo estão em linhas de
+# comentário separadas.
+
+# dê um nome curto e descritivo
+#PBS -N ___
+#PBS -q workq
+# 2 CPUs, 2GB de RAM
+#PBS -l select=1:ncpus=___:mem=___gb
+# 2 minutos
+#PBS -l walltime=00:0___:00
+# combine com o nome do job acima
+#PBS -o ___.out
+#PBS -e ___.err
+
+echo "Rodando em $(___)"                      # dica: mesmo comando usado no exemplo
+
+for i in $(seq 1 5); do
+    echo "contagem: $i"
+    sleep ___                                 # 1 segundo
+done
+
+echo "Tudo pronto."
+
+# Depois de submeter:
+#   qstat -u $(whoami)          -- observe ele passar de Q para R
+#   cat <seu arquivo .out>      -- assim que terminar
+#
+# Confira seu trabalho com exercise_01_ANSWER.pbs se algo não submeter
+# corretamente (o qsub reclama alto e na hora se uma linha #PBS estiver malformada).

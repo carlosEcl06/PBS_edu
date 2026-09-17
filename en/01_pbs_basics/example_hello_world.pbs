@@ -1,0 +1,14 @@
+#!/bin/bash
+#PBS -N hello_world
+#PBS -q workq
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -o example_hello_world.out
+#PBS -e example_hello_world.err
+
+echo "Hello from $(hostname), running as job $PBS_JOBID"
+echo "Started at: $(date)"
+echo "I have ${PBS_NUM_PPN:-1} CPU(s) and this much memory available:"
+free -h | head -2
+sleep 5
+echo "Finished at: $(date)"

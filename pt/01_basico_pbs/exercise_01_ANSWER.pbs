@@ -1,0 +1,18 @@
+#!/bin/bash
+# Gabarito de exercise_01_fill_in_blanks.pbs -- tente fazer sozinho(a) primeiro!
+
+#PBS -N exercise_01
+#PBS -q workq
+#PBS -l select=1:ncpus=2:mem=2gb
+#PBS -l walltime=00:02:00
+#PBS -o exercise_01.out
+#PBS -e exercise_01.err
+
+echo "Rodando em $(hostname)"
+
+for i in $(seq 1 5); do
+    echo "contagem: $i"
+    sleep 1
+done
+
+echo "Tudo pronto."

@@ -1,0 +1,18 @@
+#!/bin/bash
+# Corrigé de exercise_01_fill_in_blanks.pbs -- essayez d'abord par vous-même !
+
+#PBS -N exercise_01
+#PBS -q workq
+#PBS -l select=1:ncpus=2:mem=2gb
+#PBS -l walltime=00:02:00
+#PBS -o exercise_01.out
+#PBS -e exercise_01.err
+
+echo "Exécuté sur $(hostname)"
+
+for i in $(seq 1 5); do
+    echo "compte : $i"
+    sleep 1
+done
+
+echo "Terminé."

@@ -1,0 +1,21 @@
+#!/bin/bash
+# Exercice 2 : avant de remplir le blanc ci-dessous, exécutez
+# check_free_nodes.sh (ou `pbsnodes <nom>` sur quelques candidats) pour
+# trouver un nœud réellement libre en ce moment. Ne devinez pas -- c'est
+# tout le but de cet exercice.
+
+# Remarque : sur cette configuration PBS, les lignes de directive #PBS ne
+# supportent PAS les commentaires en fin de ligne -- tout le reste de la
+# ligne est interprété comme du texte de directive. Placez les commentaires
+# explicatifs sur leur propre ligne, comme celle-ci.
+#PBS -N exercise_02
+#PBS -q workq
+# remplissez un nom de nœud que vous avez confirmé libre avec check_free_nodes.sh
+#PBS -l select=1:ncpus=1:mem=1gb:host=___
+#PBS -l walltime=00:02:00
+#PBS -o exercise_02.out
+#PBS -e exercise_02.err
+
+echo "J'ai demandé à m'exécuter sur un nœud spécifique."
+echo "Je suis réellement tombé(e) sur : $(hostname)"
+echo "(ces deux valeurs devraient correspondre -- sinon, quelque chose s'est mal passé dans votre fixation du nœud)"

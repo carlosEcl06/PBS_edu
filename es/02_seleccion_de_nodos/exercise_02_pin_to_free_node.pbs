@@ -1,0 +1,21 @@
+#!/bin/bash
+# Ejercicio 2: antes de completar el espacio en blanco de abajo, ejecuta
+# check_free_nodes.sh (o `pbsnodes <nombre>` en algunos candidatos) para
+# encontrar un nodo que esté realmente libre ahora mismo. No adivines --
+# ese es todo el punto de este ejercicio.
+
+# Nota: en esta configuración de PBS, las líneas de directiva #PBS NO admiten
+# comentarios al final de línea -- el resto de la línea completa se
+# interpreta como texto de la directiva. Pon los comentarios explicativos en
+# su propia línea, como esta.
+#PBS -N exercise_02
+#PBS -q workq
+# completa un nombre de nodo que hayas confirmado libre con check_free_nodes.sh
+#PBS -l select=1:ncpus=1:mem=1gb:host=___
+#PBS -l walltime=00:02:00
+#PBS -o exercise_02.out
+#PBS -e exercise_02.err
+
+echo "Pedí correr en un nodo específico."
+echo "En realidad caí en: $(hostname)"
+echo "(estos dos deberían coincidir -- si no coinciden, algo salió mal en cómo fijaste el nodo)"

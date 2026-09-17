@@ -1,0 +1,28 @@
+#!/bin/bash
+#PBS -N example_container
+#PBS -q workq
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:10:00
+#PBS -o example_container.out
+#PBS -e example_container.err
+
+set -x
+mkdir -p apptainer_edu_work
+cd apptainer_edu_work
+
+echo "Pulling a small, fast public container (Ubuntu 22.04)..."
+apptainer pull --force ubuntu.sif docker://ubuntu:22.04
+
+echo "Inside the container, /etc/os-release says:"
+apptainer exec ubuntu.sif cat /etc/os-release
+
+echo ""
+echo "Outside the container, on the actual compute node, /etc/os-release says:"
+cat /etc/os-release
+
+echo ""
+echo "Different OS strings above confirms the container's filesystem really is"
+echo "its own environment, not just the host's tools relabeled. (Note: unlike"
+echo "Docker, Apptainer shares the host's hostname/network by default -- 'hostname'"
+echo "run inside vs outside would show the SAME value, which is expected here,"
+echo "not a sign anything's wrong.)"
