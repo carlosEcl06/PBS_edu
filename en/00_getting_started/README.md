@@ -67,6 +67,12 @@ You want to see `All checks passed.` at the end.
 - **`pull_containers.sh`** downloaded the tools (seqkit, FastQC, fastp, minimap2, samtools, wgsim) as **container images**. A container bundles a program with everything it needs, so there is nothing to install and everyone runs identical versions. Section 02 explains this properly.
 - **`make_samples.pbs`** is a real job: it runs `wgsim` to simulate 6 samples × 300,000 read pairs. Sections 03–05 use them because they are large enough to make CPU, memory and time visible.
 
+### Where things end up
+
+- **Logs** of your jobs (`make_samples.o12345`): in the directory you submitted from.
+- **Data, images, results:** in the directories set in `site.conf` (`DATA_DIR`, `SIF_CACHE`, `WORKDIR`). To use those names in your own shell, `source` the helper file first: `source ../lib/edu.sh; echo $DATA_DIR`.
+- In every later section, `results/` inside the section directory is a shortcut to that section's output folder.
+
 ## 4. A 60-second FASTQ primer
 
 Sequencers produce **FASTQ** files: 4 lines per read.

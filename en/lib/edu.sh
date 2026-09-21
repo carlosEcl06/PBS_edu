@@ -22,6 +22,15 @@ source "$EDU_ROOT/site.conf"
 # shellcheck disable=SC1091
 source "$EDU_ROOT/containers.conf"
 
+# Convenience: inside a section directory, results/ is a shortcut to that section's
+# output folder under $WORKDIR (where all jobs write), so `ls results/` just works.
+_edu_here="${PBS_O_WORKDIR:-$PWD}"
+if [ "$(dirname "$_edu_here")" = "$EDU_ROOT" ] && { [ ! -e "$_edu_here/results" ] || [ -L "$_edu_here/results" ]; }; then
+    mkdir -p "$WORKDIR/$(basename "$_edu_here")" 2>/dev/null \
+        && ln -sfn "$WORKDIR/$(basename "$_edu_here")" "$_edu_here/results" 2>/dev/null
+fi
+unset _edu_here
+
 # ---------------------------------------------------------------- running tools
 
 # Path of the .sif image for a tool name listed in containers.conf.

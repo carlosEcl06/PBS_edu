@@ -106,6 +106,7 @@ if ./fetch_data.sh > fetch.out 2>&1; then
     expect "check_01a fails before the job ran"  '! ./check_01a.sh >/dev/null 2>&1'
     for s in solutions/exercise_01a.pbs solutions/exercise_01b.pbs solutions/exercise_01c.pbs example_count_reads.pbs; do bash "$s" >/dev/null 2>&1 || nok "solution runs: $s"; done
     for c in check_01a.sh check_01b.sh check_01c.sh; do expect "$c passes after the solution" "./$c >/dev/null 2>&1"; done
+    expect "results/ shortcut points to the section output folder" '[ -L results ] && [ -s results/fastq_counts.tsv ] && [ "$(readlink results)" = "$T/store/work/01_pbs_basics" ]'
     unset PBS_O_WORKDIR PBS_JOBID NCPUS
     cd ../00_getting_started || exit 1
 else

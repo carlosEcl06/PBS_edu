@@ -39,7 +39,7 @@ Several ids are joined with colons: `afterok:$J1:$J2`. For an **array** id (`123
  step3_summary.pbs (one job: samtools flagstat of all samples -> summary.tsv)
 ```
 
-Each step stamps its start and end times in `$WORKDIR/05_pipelines_dependencies/timeline.tsv` (via `edu_stamp`, in `lib/edu.sh`). This makes ordering *provable*: the checkers use it to verify that a later step really did not start before the earlier one ended.
+Each step stamps its start and end times in `results/timeline.tsv` (via `edu_stamp`, in `lib/edu.sh`). This makes ordering *provable*: the checkers use it to verify that a later step really did not start before the earlier one ended.
 
 `example_two_step_driver.sh` submits steps 1 and 2. A **driver** is a plain shell script run on the login node: it computes nothing, only submits jobs, so it is fast and safe there.
 
@@ -67,7 +67,7 @@ Run the good pipeline again afterwards to clean up: `./example_two_step_driver.s
 `exercise_05a_complete_the_driver.sh` is missing three pieces (the first script name, the dependency type, the variable holding step 2's id). Fill them in, run it, wait for everything to finish, then `./check_05a.sh`. The checker verifies the summary numbers against the BAM files **and** that step 2 started after step 1 ended, and step 3 after step 2.
 
 ### 5b · Write your own final step (20 min)
-Write `my_step4.pbs` (1 CPU, 1 GB, 5 min) that reads `summary.tsv` and writes `$WORKDIR/05_pipelines_dependencies/report.txt` with two lines:
+Write `my_step4.pbs` (1 CPU, 1 GB, 5 min) that reads `summary.tsv` and writes `report.txt` next to it (`results/report.txt`, i.e. `$WORKDIR/05_pipelines_dependencies/report.txt`) with two lines:
 
 ```
 samples: <number of samples>

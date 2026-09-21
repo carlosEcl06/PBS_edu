@@ -53,6 +53,12 @@ States: **Q** queued · **R** running · **H** held · **E** exiting · **F** fi
 
 When the job ends, PBS writes `hello.o12345` in your submit directory. Read it with `cat`. **The log appears only when the job ends**, not while it runs, so a running job's `.o` file may not exist yet. That is normal. For long jobs, write progress to your own log file on the shared filesystem.
 
+> **Where do my output files go?** Two different places, on purpose:
+> - the **log** (`count_reads.o12345`) is written by PBS into the directory you submitted from;
+> - the **result files** your script creates go to your output area, `$WORKDIR` from `site.conf`, in one sub-folder per section. Inside each section directory, **`results/`** is a shortcut to that folder (it is created the first time a job or checker runs): `ls results/`, `cat results/fastq_counts.tsv`.
+>
+> Want the real path? `source ../lib/edu.sh; echo $WORKDIR`. (`$WORKDIR` is not defined in your login shell until you `source` that file.)
+
 ## 3. Try it
 
 ```bash
@@ -63,7 +69,7 @@ cat hello.o*              # note "Directory when the job started"
 qsub example_count_reads.pbs
 ```
 
-`example_hello_world.pbs` prints where the job started (your home!) and where it went after `cd`. `example_count_reads.pbs` is your first bioinformatics job: it counts reads and bases in the two real FASTQ files using `zcat` and `awk`. Read it, then look at its result in `$WORKDIR/01_pbs_basics/fastq_counts.tsv`.
+`example_hello_world.pbs` prints where the job started (your home!) and where it went after `cd`. `example_count_reads.pbs` is your first bioinformatics job: it counts reads and bases in the two real FASTQ files using `zcat` and `awk`. Read it, then look at its result: the table is also saved as a file, `results/fastq_counts.tsv` (see the box above: `results/` is where all your jobs' output files go).
 
 **Questions to answer from the logs** (no need to write them anywhere):
 1. Which node did your job run on? Is it the login node?
@@ -84,7 +90,7 @@ Edit `exercise_01a_fill_in_blanks.pbs`, replacing each `___`. Submit it, wait fo
 Write `my_reference_stats.pbs` yourself. Requirements:
 
 - 1 CPU, 1 GB, 5 minutes, a name of your choice, log files merged.
-- Read `$DATA_DIR/ref/genome.fasta` (the reference genome) and write `$WORKDIR/01_pbs_basics/reference_stats.txt` with exactly these five lines:
+- Read `$DATA_DIR/ref/genome.fasta` (the reference genome) and write `reference_stats.txt` in `$WORKDIR/01_pbs_basics/` (that is `results/` from this directory) with exactly these five lines:
 
   ```
   sequences: <number of FASTA records>

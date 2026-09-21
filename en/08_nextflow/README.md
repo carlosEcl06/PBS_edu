@@ -56,7 +56,7 @@ cd 08_nextflow
 ./make_config.sh
 nextflow run main.nf -resume
 ```
-In another terminal: `qstat -u $USER`. You will see jobs named like `nf-FASTP_sample_01` appear and vanish. Results end up in `$WORKDIR/08_nextflow/results/`.
+In another terminal: `qstat -u $USER`. You will see jobs named like `nf-FASTP_sample_01` appear and vanish. Results end up in `$WORKDIR/08_nextflow/results/` (from this directory: `results/results/`).
 
 **Where does the `nextflow run` process itself live?** It is a long-running "head" process that submits and watches the others. It is light, and many sites allow it on the login node inside `tmux`/`screen`; others don't. `qsub run_nextflow.pbs` runs it as a PBS job instead. Ask your admin which is expected.
 

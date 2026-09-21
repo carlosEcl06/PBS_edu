@@ -59,7 +59,7 @@ cd 03_resources_threads
 qsub example_align_threads.pbs     # aligns all 6 samples with 2 CPUs
 ```
 
-Read the script: it loops over the sample sheet, aligns each sample to the reference genome, sorts the reads into a BAM file and appends the time taken to `$WORKDIR/03_resources_threads/timings.tsv`.
+Read the script: it loops over the sample sheet, aligns each sample to the reference genome, sorts the reads into a BAM file and appends the time taken to `results/timings.tsv`.
 
 ## 5. Exercises
 
@@ -94,6 +94,6 @@ Discussion (no right answer, but be ready to justify): where does efficiency dro
 | All timings are almost the same | Expected for small inputs. That is the lesson: extra CPUs did not help. |
 | `samtools sort: ... out of memory` / `Killed` | Raise `mem=`, or lower samtools' `-m` (per-thread buffer). |
 | Job killed, log ends abruptly | `qstat -xf`: `Exit_status` ≥ 256 → walltime or memory limit. |
-| `timings.tsv` has old rows | It appends forever. `rm $WORKDIR/03_resources_threads/timings.tsv` to start fresh. |
+| `timings.tsv` has old rows | It appends forever. `rm results/timings.tsv` to start fresh. |
 
 Next: [04 · Job arrays](../04_job_arrays/README.md)

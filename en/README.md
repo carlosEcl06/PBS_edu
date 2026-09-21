@@ -62,6 +62,9 @@ You do **not** need admin rights, bioinformatics tools installed, or prior sched
   a queue, node or path. See `examples/site.pne.conf` for a filled-in example.
 - `lib/edu.sh` holds small shared helpers (short, readable, worth reading).
 - Job logs appear in the submit directory, named `<jobname>.o<jobid>`, when the job ends.
+- Result files your jobs create go to `$WORKDIR` (from `site.conf`), one sub-folder per section. Inside each
+  section directory, **`results/`** is a shortcut to that folder (created automatically): `ls results/`.
+  `$WORKDIR` itself is only defined after `source lib/edu.sh`.
 
 ## Extras
 

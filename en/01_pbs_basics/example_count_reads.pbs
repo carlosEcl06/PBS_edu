@@ -4,7 +4,7 @@
 #
 #   qsub example_count_reads.pbs
 #   cat count_reads.o<jobid>            (after it finishes)
-#   cat $WORKDIR/01_pbs_basics/fastq_counts.tsv
+#   cat results/fastq_counts.tsv        (results/ is a shortcut to your output folder)
 
 #PBS -N count_reads
 #PBS -l select=1:ncpus=1:mem=1gb
@@ -27,3 +27,4 @@ for f in "$DATA_DIR"/real/test_1.fastq.gz "$DATA_DIR"/real/test_2.fastq.gz; do
 done
 
 cat "$OUT/fastq_counts.tsv"
+echo "Table saved as: $OUT/fastq_counts.tsv  (from the section directory: results/fastq_counts.tsv)"

@@ -63,7 +63,7 @@ Logs: every sub-job writes its own file, named like `qc_array.o12345.3`.
 cd 04_job_arrays
 qsub example_array_qc.pbs
 qstat -t -u $USER
-ls $WORKDIR/04_job_arrays/fastp/
+ls results/fastp/
 ```
 Open one `.fastp.json` and find `before_filtering` vs `after_filtering` read counts. How many reads were removed per sample? (The reads are simulated with few errors, so not many.)
 

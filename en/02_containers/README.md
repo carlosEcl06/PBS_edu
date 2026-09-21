@@ -78,7 +78,7 @@ The log shows: the tool version inside, proof that the node itself has no `seqki
 **FastQC** is the standard first look at sequencing reads. Write `my_fastqc.pbs` that:
 - requests 2 CPUs, 2 GB, 10 minutes;
 - runs `fastqc` from `$SIF_CACHE/fastqc.sif` on both real FASTQ files (`$DATA_DIR/real/test_1.fastq.gz`, `test_2.fastq.gz`) with 2 threads (`-t 2`);
-- writes its output to `$WORKDIR/02_containers/fastqc/` (use `-o`; the directory must exist first).
+- writes its output to `$WORKDIR/02_containers/fastqc/`, i.e. `results/fastqc/` from this directory (use `-o`; the directory must exist first).
 
 Then `./check_02b.sh`. When it passes, copy the `.html` files to your laptop with `scp`/`rsync` and open them in a browser. Which module would you look at first to spot adapter contamination?
 

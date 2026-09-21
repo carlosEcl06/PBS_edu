@@ -5,6 +5,7 @@ en/site.conf.bak
 # Downloaded / simulated data, container images, job results
 en/data/
 en/work/
+en/*/results
 en/sif/
 
 # PBS job logs (name.o12345, name.e12345, array sub-jobs name.o12345[1])
