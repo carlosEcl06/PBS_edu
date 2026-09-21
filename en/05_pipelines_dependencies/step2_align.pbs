@@ -1,0 +1,38 @@
+#!/bin/bash
+# Pipeline step 2 (array): align each cleaned sample and index the BAM.
+# Needs the outputs of step 1, so the driver submits it with a dependency.
+
+#PBS -N pipe_align
+#PBS -l select=1:ncpus=2:mem=4gb
+#PBS -l walltime=00:20:00
+#PBS -J 1-6
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_preflight || exit 1
+set -o pipefail
+
+OUT="$WORKDIR/05_pipelines_dependencies"
+EDU_TIMELINE="$OUT/timeline.tsv"
+mkdir -p "$OUT/bam"
+edu_stamp step2 start
+
+# For the failure experiment in the README: sub-job 3 fails on purpose when asked to.
+if [ "${EDU_INJECT_FAILURE:-none}" = "step2" ] && [ "$PBS_ARRAY_INDEX" = "3" ]; then
+    echo "injected failure in step2, sub-job 3" >&2
+    exit 1
+fi
+
+line="$(sed -n "${PBS_ARRAY_INDEX}p" "$DATA_DIR/samples/samples.tsv")"
+IFS=$'\t' read -r id _ _ <<< "$line"
+r1="$OUT/clean/${id}_R1.clean.fastq.gz"
+r2="$OUT/clean/${id}_R2.clean.fastq.gz"
+[ -s "$r1" ] && [ -s "$r2" ] || { echo "step 1 output missing for $id" >&2; exit 1; }
+
+T="$(edu_threads)"
+edu_exec minimap2 -t "$T" -ax sr "$DATA_DIR/ref/genome.fasta" "$r1" "$r2" 2> "$OUT/bam/$id.minimap2.log" \
+    | edu_exec samtools sort -@ "$((T - 1))" -m 256M -T "$OUT/bam/$id.tmp" -o "$OUT/bam/$id.bam" - || exit 1
+edu_exec samtools index "$OUT/bam/$id.bam" || exit 1
+
+edu_stamp step2 end

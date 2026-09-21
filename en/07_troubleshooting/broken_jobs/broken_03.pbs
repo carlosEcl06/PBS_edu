@@ -1,0 +1,23 @@
+#!/bin/bash
+# Broken job 3.
+# Symptom: qsub refuses the job with an error about limits, OR the job sits in state Q
+# for ever while other people's jobs start and finish.
+#
+# Submit from the section directory:  qsub broken_jobs/broken_03.pbs
+# If it stays queued, find out why with:  qstat -f <jobid>   then cancel it: qdel <jobid>
+# Your task: work out why it fails, fix THIS file (edit it in place; git checkout restores the original),
+# resubmit from the section directory and check with ./check_07.sh 3
+
+#PBS -N broken_03
+#PBS -l select=1:ncpus=512:mem=4000gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+OUT="$WORKDIR/07_troubleshooting"
+mkdir -p "$OUT"
+
+echo "reads in R1 of sample_01:"
+edu_exec seqkit stats -T "$DATA_DIR/samples/sample_01_R1.fastq.gz"
+echo "ran on $(hostname)" > "$OUT/broken_03.ok"

@@ -1,0 +1,25 @@
+#!/bin/bash
+# One possible solution to exercise 1c. Yours can look different as long as
+# the output file has the right content.
+
+#PBS -N ref_stats
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+
+OUT="$WORKDIR/01_pbs_basics"
+mkdir -p "$OUT"
+
+# Header lines start with ">", every other line is sequence.
+# gsub() returns how many G/C characters it replaced, which is a handy counter.
+awk '/^>/ { n++; next }
+     { len += length($0); gc += gsub(/[GCgc]/, "") }
+     END { printf "sequences: %d\nlength: %d\ngc_percent: %.2f\n", n, len, 100 * gc / len }' \
+    "$DATA_DIR/ref/genome.fasta" > "$OUT/reference_stats.txt"
+
+echo "job_id: $PBS_JOBID" >> "$OUT/reference_stats.txt"
+echo "host: $(hostname)" >> "$OUT/reference_stats.txt"
+cat "$OUT/reference_stats.txt"

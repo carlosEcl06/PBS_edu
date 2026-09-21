@@ -1,0 +1,20 @@
+#!/bin/bash
+# Solution to broken job 3.
+# Cause: no node has 512 CPUs or 4000 GB. Depending on the site, qsub rejects the job
+# ("exceeds queue resource limits") or it waits in Q for ever. qstat -f <jobid> shows a
+# "comment = Can Never Run: ..." or "Not Running: Insufficient amount of resource".
+# Fix: request what the job needs (here 1 CPU, 2 GB). Cancel the stuck job with qdel.
+
+#PBS -N broken_03
+#PBS -l select=1:ncpus=1:mem=2gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+OUT="$WORKDIR/07_troubleshooting"
+mkdir -p "$OUT"
+
+echo "reads in R1 of sample_01:"
+edu_exec seqkit stats -T "$DATA_DIR/samples/sample_01_R1.fastq.gz"
+echo "ran on $(hostname)" > "$OUT/broken_03.ok"

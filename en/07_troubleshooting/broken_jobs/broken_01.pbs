@@ -1,0 +1,23 @@
+#!/bin/bash
+# Broken job 1.
+# Symptom: the job finishes normally, its exit status is 0 and the result file exists,
+# but the number in it is wrong.
+#
+# Submit from the section directory:  qsub broken_jobs/broken_01.pbs
+# Your task: work out why it fails, fix THIS file (edit it in place; git checkout restores the original),
+# resubmit from the section directory and check with ./check_07.sh 1
+
+#PBS -N broken_01
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+OUT="$WORKDIR/07_troubleshooting"
+mkdir -p "$OUT"
+
+# number of reads in the real test file (4 lines per read)
+reads=$(( $(zcat data/real/test_1.fastq.gz | wc -l) / 4 ))
+echo "reads: $reads"
+echo "reads: $reads" > "$OUT/broken_01.ok"

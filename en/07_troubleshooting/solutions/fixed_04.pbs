@@ -1,0 +1,39 @@
+#!/bin/bash
+# Solution to broken job 4.
+# Cause: a typo in one file name (sample_3 instead of sample_03). With "set -e" the loop
+# stopped at the third file, after two were processed. In a real batch that can happen
+# after hours of work. Fix: correct the name AND validate every input at the start,
+# so all problems show up in the first second, together.
+
+#PBS -N broken_04
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_preflight || exit 1
+set -e
+OUT="$WORKDIR/07_troubleshooting/b04"
+mkdir -p "$OUT"
+
+FILES=(
+    "$DATA_DIR/samples/sample_01_R1.fastq.gz"
+    "$DATA_DIR/samples/sample_02_R1.fastq.gz"
+    "$DATA_DIR/samples/sample_03_R1.fastq.gz"
+    "$DATA_DIR/samples/sample_04_R1.fastq.gz"
+)
+
+# Validate ALL inputs before doing any work, and report every problem at once.
+missing=0
+for f in "${FILES[@]}"; do
+    [ -s "$f" ] || { echo "MISSING INPUT: $f" >&2; missing=$((missing + 1)); }
+done
+[ "$missing" -eq 0 ] || { echo "$missing input file(s) missing, nothing was processed" >&2; exit 1; }
+
+for f in "${FILES[@]}"; do
+    echo "processing $f"
+    edu_exec seqkit stats -T "$f" > "$OUT/$(basename "$f").tsv"
+done
+
+echo "processed: ${#FILES[@]}" > "$WORKDIR/07_troubleshooting/broken_04.ok"

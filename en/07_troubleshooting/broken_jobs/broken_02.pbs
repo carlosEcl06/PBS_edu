@@ -1,0 +1,33 @@
+#!/bin/bash
+# Broken job 2.
+# Symptom: the log stops in the middle of the work and the result file never appears.
+# No error message from the script itself.
+#
+# Submit from the section directory:  qsub broken_jobs/broken_02.pbs
+# Your task: work out why it fails, fix THIS file (edit it in place; git checkout restores the original),
+# resubmit from the section directory and check with ./check_07.sh 2
+
+#PBS -N broken_02
+#PBS -l select=1:ncpus=1:mem=2gb
+#PBS -l walltime=00:00:20
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_preflight || exit 1
+set -o pipefail
+OUT="$WORKDIR/07_troubleshooting"
+mkdir -p "$OUT/b02"
+
+for id in sample_01 sample_02; do
+    echo "[$(date +%T)] aligning $id"
+    edu_exec minimap2 -t 1 -ax sr "$DATA_DIR/ref/genome.fasta" \
+        "$DATA_DIR/samples/${id}_R1.fastq.gz" "$DATA_DIR/samples/${id}_R2.fastq.gz" 2> "$OUT/b02/$id.log" \
+        | edu_exec samtools sort -T "$OUT/b02/$id.tmp" -o "$OUT/b02/$id.bam" - || exit 1
+done
+
+# stand-in for a slow final step (index building, checksums, copying to a slow disk...)
+echo "[$(date +%T)] finalising"
+sleep 30
+
+echo "aligned: 2 samples" > "$OUT/broken_02.ok"

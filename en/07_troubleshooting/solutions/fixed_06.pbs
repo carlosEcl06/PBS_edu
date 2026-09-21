@@ -1,0 +1,26 @@
+#!/bin/bash
+# Solution to broken job 6.
+# Cause: variables you export in your login shell are NOT passed to jobs. PBS starts a
+# fresh shell on the compute node, so $SAMPLE was undefined ("unbound variable" because of set -u).
+# Two fixes: give the variable a default inside the script (done here), or pass it on
+# submission:   qsub -v SAMPLE=sample_03 broken_jobs/broken_06.pbs
+# (qsub -V would pass your WHOLE environment: convenient but makes jobs hard to reproduce.)
+
+#PBS -N broken_06
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+SAMPLE="${SAMPLE:-sample_03}"
+set -u
+OUT="$WORKDIR/07_troubleshooting"
+mkdir -p "$OUT"
+
+echo "Processing sample: $SAMPLE"
+r1="$(awk -F'\t' -v s="$SAMPLE" '$1 == s { print $2 }' "$DATA_DIR/samples/samples.tsv")"
+[ -n "$r1" ] || { echo "sample $SAMPLE not found in samples.tsv" >&2; exit 1; }
+
+edu_exec seqkit stats -T "$r1"
+echo "sample: $SAMPLE" > "$OUT/broken_06.ok"

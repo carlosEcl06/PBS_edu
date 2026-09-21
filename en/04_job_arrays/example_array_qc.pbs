@@ -1,0 +1,39 @@
+#!/bin/bash
+# Quality-control every sample with fastp, one array sub-job per sample.
+#
+#   qsub example_array_qc.pbs
+#   qstat -t -u $USER          (sub-jobs; the array itself is shown as "123[]")
+#
+# The array covers indices 1..6 (six samples). If you changed N_SAMPLES in
+# site.conf, override on the command line:  qsub -J 1-$N_SAMPLES example_array_qc.pbs
+
+#PBS -N qc_array
+#PBS -l select=1:ncpus=2:mem=2gb
+#PBS -l walltime=00:10:00
+#PBS -J 1-6
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+edu_preflight || exit 1
+
+# Every sub-job runs this same script; only PBS_ARRAY_INDEX differs (1, 2, ... 6).
+# We use it as a line number into the sample sheet: id <TAB> R1 <TAB> R2
+echo "This is sub-job $PBS_ARRAY_INDEX"
+line="$(sed -n "${PBS_ARRAY_INDEX}p" "$DATA_DIR/samples/samples.tsv")"
+IFS=$'\t' read -r id r1 r2 <<< "$line"
+[ -n "$id" ] || { echo "no sample on line $PBS_ARRAY_INDEX of samples.tsv" >&2; exit 1; }
+echo "sample: $id"
+
+OUT="$WORKDIR/04_job_arrays/fastp"
+mkdir -p "$OUT"
+
+# Each sample writes only its own files, so sub-jobs can never overwrite each other.
+edu_exec fastp \
+    -i "$r1" -I "$r2" \
+    -o "$OUT/${id}_R1.clean.fastq.gz" -O "$OUT/${id}_R2.clean.fastq.gz" \
+    -j "$OUT/${id}.fastp.json" -h "$OUT/${id}.fastp.html" \
+    --thread "$(edu_threads)"
+
+echo "finished $id"

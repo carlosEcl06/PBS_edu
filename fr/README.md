@@ -1,3 +1,5 @@
+> ⚠️ **Version obsolète.** Cette traduction décrit la première version du cours et mentionne un serveur précis. Le cours en anglais (`../en/`) a été réécrit et constitue la version maintenue ; ce dossier sera retraduit ultérieurement.
+
 # PBS_edu — ordonnancement de jobs sur ce cluster partagé
 
 Un guide pratique pour exécuter des jobs de calcul sur ce serveur de la bonne manière :

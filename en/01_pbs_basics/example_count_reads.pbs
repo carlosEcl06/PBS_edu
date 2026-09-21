@@ -1,0 +1,29 @@
+#!/bin/bash
+# A first "real" bioinformatics job: count reads and bases in the two real
+# FASTQ files, using only standard Unix tools (zcat, wc, awk).
+#
+#   qsub example_count_reads.pbs
+#   cat count_reads.o<jobid>            (after it finishes)
+#   cat $WORKDIR/01_pbs_basics/fastq_counts.tsv
+
+#PBS -N count_reads
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+
+OUT="$WORKDIR/01_pbs_basics"
+mkdir -p "$OUT"
+printf 'file\treads\tbases\n' > "$OUT/fastq_counts.tsv"
+
+for f in "$DATA_DIR"/real/test_1.fastq.gz "$DATA_DIR"/real/test_2.fastq.gz; do
+    # FASTQ has 4 lines per read; line 2 of every record is the sequence.
+    zcat "$f" | awk -v name="$(basename "$f")" \
+        'NR % 4 == 2 { reads++; bases += length($0) } END { printf "%s\t%d\t%d\n", name, reads, bases }' \
+        >> "$OUT/fastq_counts.tsv"
+done
+
+cat "$OUT/fastq_counts.tsv"

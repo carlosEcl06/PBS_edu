@@ -1,0 +1,4 @@
+1833c8720be7a62a4f132beefb68d2cbc32c3e20bd85a8939dba178850ba1ba4  ref/genome.fasta
+20991e44efd8b173d9448b3e937cec12a891b80eba9fb7a6e655f931f0ae2f84  ref/genome.gff3
+0515ba304cb1bf7abcdd9c156b6affad7e580273f983dfed2e8fe2d918e800ff  real/test_1.fastq.gz
+0080f40cab58c7e7b85443e37de22775e3ed6b7afdef9a3271ac3147576f3027  real/test_2.fastq.gz

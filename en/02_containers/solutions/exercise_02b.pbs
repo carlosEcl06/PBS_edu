@@ -1,0 +1,21 @@
+#!/bin/bash
+# One possible solution to exercise 2b (FastQC on both real read files).
+
+#PBS -N fastqc
+#PBS -l select=1:ncpus=2:mem=2gb
+#PBS -l walltime=00:10:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+
+OUT="$WORKDIR/02_containers/fastqc"
+mkdir -p "$OUT"
+
+# FastQC needs the output directory to exist already, and -t sets its threads.
+"$CONTAINER_RUNTIME" exec --bind "$DATA_DIR,$WORKDIR" "$SIF_CACHE/fastqc.sif" \
+    fastqc -t 2 -o "$OUT" \
+    "$DATA_DIR/real/test_1.fastq.gz" "$DATA_DIR/real/test_2.fastq.gz"
+
+ls -l "$OUT"

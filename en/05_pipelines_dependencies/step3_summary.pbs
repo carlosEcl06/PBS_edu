@@ -1,0 +1,29 @@
+#!/bin/bash
+# Pipeline step 3 (single job): one summary table over all samples.
+# Runs only after ALL sub-jobs of step 2 succeeded.
+
+#PBS -N pipe_summary
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:10:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_preflight || exit 1
+
+OUT="$WORKDIR/05_pipelines_dependencies"
+EDU_TIMELINE="$OUT/timeline.tsv"
+edu_stamp step3 start
+
+printf 'sample\ttotal_reads\tmapped_reads\tmapped_pct\n' > "$OUT/summary.tsv"
+while IFS=$'\t' read -r id _ _; do
+    # flagstat prints lines like "600000 + 0 in total (...)" and "598000 + 0 mapped (...)"
+    edu_exec samtools flagstat "$OUT/bam/$id.bam" | awk -v id="$id" '
+        $4 == "in" { total = $1 }
+        $4 == "mapped" { mapped = $1 }
+        END { printf "%s\t%d\t%d\t%.2f\n", id, total, mapped, (total ? 100 * mapped / total : 0) }' \
+        >> "$OUT/summary.tsv" || exit 1
+done < "$DATA_DIR/samples/samples.tsv"
+
+cat "$OUT/summary.tsv"
+edu_stamp step3 end

@@ -1,0 +1,38 @@
+#!/bin/bash
+# Exercise 1b -- this job is broken. It has THREE separate bugs.
+#
+# It should build a histogram of read lengths for test_1.fastq.gz and write
+# "finished" to a marker file at the end.
+#
+# Your method (the same one you will use on real problems):
+#   1. qsub exercise_01b_fix_the_job.pbs
+#   2. Read what happens: the qsub error, or the log file (fix_me.o<jobid>),
+#      or qstat -xf <jobid> (look at Exit_status).
+#   3. Fix ONE bug, resubmit, repeat.
+# When the job succeeds:   ./check_01b.sh
+#
+# Hints are in solutions/exercise_01b.pbs, but try without. If a job is stuck
+# or misbehaving, kill it with:  qdel <jobid>
+
+#PBS -N fix_me
+#PBS -l select=1:ncpu=1:mem=1gb
+#PBS -l walltime=00:00:10
+#PBS -j oe
+
+source ../lib/edu.sh || exit 1
+edu_banner
+
+FASTQ="$DATA_DIR/real/test_1.fastq.gz"
+OUT="$WORKDIR/01_pbs_basics"
+mkdir -p "$OUT"
+
+echo "Building the read-length histogram..."
+zcat "$FASTQ" | awk 'NR % 4 == 2 { print length($0) }' | sort -n | uniq -c \
+    | awk '{ print $2 "\t" $1 }' > "$OUT/length_histogram.tsv"
+
+# stand-in for a slow step (a big alignment, a slow disk...)
+echo "Doing a slow step..."
+sleep 20
+
+echo "finished" > "$OUT/length_hist.done"
+echo "Done."

@@ -1,0 +1,23 @@
+#!/bin/bash
+# Solution to exercise 4a. Submit from the section directory: qsub solutions/exercise_04a.pbs
+
+#PBS -N ex04a
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -J 1-6
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+edu_preflight || exit 1
+
+line="$(sed -n "${PBS_ARRAY_INDEX}p" "$DATA_DIR/samples/samples.tsv")"
+IFS=$'\t' read -r id r1 r2 <<< "$line"
+[ -n "$id" ] || { echo "no sample for this index" >&2; exit 1; }
+
+OUT="$WORKDIR/04_job_arrays/stats"
+mkdir -p "$OUT"
+
+edu_exec seqkit stats -T "$r1" "$r2" > "$OUT/$id.stats.tsv"
+echo "finished $id"

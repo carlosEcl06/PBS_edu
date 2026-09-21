@@ -1,60 +1,77 @@
-# PBS_edu — job scheduling on this shared cluster
+# PBS for bioinformatics: a hands-on course
 
-A short, hands-on guide to running compute on this server the way it's meant to be
-used: through the PBS scheduler, never on the login node, with containers pinned to
-exact versions. Everything here was worked out (and, in a couple of places, debugged
-the hard way) while building a real phylogenomics pipeline on this same server — the
-examples are grounded in actual mistakes, not hypotheticals.
+Learn to run real analyses on a shared compute cluster with PBS, by doing it. Every exercise is a job you
+submit, run on real (or realistically simulated) sequencing data with real tools, and verify with an
+automatic checker.
 
-## Why this exists
+**Who it's for:** biologists, students and analysts who know basic Linux (`cd`, `ls`, `nano`) and have just
+received an account on a cluster.
+**What you'll be able to do afterwards:** write and submit job scripts, choose CPU/memory/time sensibly,
+process many samples in parallel, chain steps into a pipeline, run tools from containers, and work out why a
+job failed.
+**Time:** about 6–8 hours in total; each section stands on its own (45–60 min) and builds on the previous one.
 
-This is a shared, multi-tenant server. The login node (`pne2`) is for editing files,
-submitting jobs, and light orchestration — **not for running anything that uses real
-CPU or memory**. Everyone's jobs go through PBS, which schedules them onto the compute
-nodes (`pne3` through `pne10`, availability varies). If you run your analysis directly
-on `pne2` instead of submitting it as a job, you're not just breaking a rule — you're
-using CPU that belongs to the shared login/orchestration node, which everyone
-(including people just trying to `cd` and check on their jobs) depends on staying
-responsive.
+---
 
-The good news: once you've done it two or three times, submitting a PBS job is not
-harder than running a command directly. This guide gets you there.
+## Why a course? The one-paragraph version
 
-## How to use this folder
+A cluster is shared by many people. You log in to a **login node** to prepare work, and submit **jobs** to a
+scheduler (PBS), which runs them on **compute nodes** when resources are free. Analyses that need real CPU or
+memory go in jobs, never on the login node. That single rule, plus a handful of commands (`qsub`, `qstat`,
+`qdel`), covers 90% of daily use. The rest of this course is the other 10%: doing it efficiently and fixing it
+when it breaks.
 
-Work through the numbered directories in order. Each one has:
-- a `README.md` explaining the concept,
-- one or more **working examples** you can submit as-is to see what a real job looks
-  like end to end,
-- one or more **exercises** — the same kind of script with key parts blanked out
-  (`___`), for you to fill in and submit yourself.
+## The route
 
-Nothing here touches real project data. Every exercise submits a trivial job (runs in
-seconds, uses minimal resources) so you can iterate quickly without worrying about
-using up shared resources while you're still learning.
+| # | Section | You will | Data / tools |
+|---|---|---|---|
+| 00 | [Getting started](00_getting_started/README.md) | connect, run the setup, submit your first job | SARS-CoV-2 reference + real reads |
+| 01 | [PBS basics](01_pbs_basics/README.md) | write, submit, monitor, debug a job | zcat, awk |
+| 02 | [Containers](02_containers/README.md) | run bioinformatics tools without installing them | seqkit, FastQC |
+| 03 | [Resources and threads](03_resources_threads/README.md) | measure a job and request the right CPUs, memory, time | minimap2, samtools |
+| 04 | [Job arrays](04_job_arrays/README.md) | one job per sample, re-run only failures | fastp, seqkit |
+| 05 | [Pipelines and dependencies](05_pipelines_dependencies/README.md) | chain QC → align → summary | fastp, minimap2, samtools |
+| 06 | [Interactive jobs and nodes](06_interactive_and_nodes/README.md) | test live on a compute node, read node status | pbsnodes |
+| 07 | [Troubleshooting](07_troubleshooting/README.md) | diagnose six broken jobs | logs, qstat |
+| 08 | [Nextflow](08_nextflow/README.md) (optional) | run and extend a workflow manager pipeline | Nextflow |
 
-1. **`01_pbs_basics/`** — submitting, checking, and cancelling a job. Start here even
-   if you've used PBS/Slurm elsewhere — the flags and quirks differ per cluster.
-2. **`02_node_selection/`** — checking which compute nodes are actually free, and
-   pinning your job to one explicitly. Matters more here than on some clusters, for
-   reasons explained in that section.
-3. **`03_apptainer_containers/`** — running software from a container instead of
-   fighting with `conda`/`module load` dependency resolution. This is the recommended
-   default for any tool that isn't trivial to install.
-4. **`04_common_pitfalls/`** — real bugs hit while building a production pipeline on
-   this exact server, written up as lessons rather than left as tribal knowledge.
-5. **`05_advanced_nextflow/`** (optional, once the basics feel natural) — orchestrating
-   a multi-step pipeline (many jobs, dependencies between them) with Nextflow's PBS
-   executor instead of hand-rolled `qsub` chaining.
+Do 00 first, then 01–05 in order. 06 and 07 can be done any time after 01. 08 is optional.
 
-## The one-paragraph version, if you read nothing else
+## What you need
 
-Never run real compute on `pne2`. Before submitting a job, check which compute nodes
-are actually free (`pbsnodes <node>`) rather than assuming — this server doesn't always
-support excluding a specific node, only pinning *to* one, so if you don't check first
-you can end up stuck queued behind someone else's job or silently scheduled onto a node
-with a known problem. Prefer Apptainer containers pinned to an exact version over
-`conda`/system packages for anything beyond a one-line script. And when a container-based
-job can't find a file that's visible from your login shell, check whether the path is
-actually bind-mounted inside the container before assuming your data is missing — see
-`04_common_pitfalls/`.
+- An account on a PBS cluster (OpenPBS or PBS Professional) and a terminal with `ssh`.
+- `git` (or a way to copy this folder to the cluster), `bash`.
+- Apptainer or Singularity on the cluster (usual on academic clusters; the setup script tells you if it is missing).
+- About 1 GB of disk in a directory the compute nodes can see, and internet access from the login node for
+  the one-time downloads.
+
+You do **not** need admin rights, bioinformatics tools installed, or prior scheduler experience.
+
+## How each section works
+
+1. Read the section's `README.md` (learning goals, concepts, "if it goes wrong" table).
+2. Run the **examples** (`example_*.pbs`): they work as-is. Read their comments.
+3. Do the **exercises**: `exercise_*.pbs` (fill in blanks, fix a broken job, or write one from scratch).
+4. Run the section's **checker** (`check_*.sh`). It inspects the real outputs of your jobs and tells you what
+   is wrong and where to look. Checkers never change anything.
+5. Compare with `solutions/` only after trying.
+
+**Conventions to remember**
+- Submit jobs **from the section directory**: `cd 03_resources_threads; qsub example_align_threads.pbs`.
+- Your cluster's specifics live in `site.conf` (written by `00_getting_started/setup.sh`). No script hard-codes
+  a queue, node or path. See `examples/site.pne.conf` for a filled-in example.
+- `lib/edu.sh` holds small shared helpers (short, readable, worth reading).
+- Job logs appear in the submit directory, named `<jobname>.o<jobid>`, when the job ends.
+
+## Extras
+
+- [Cheat sheet](CHEATSHEET.md): the commands and script anatomy on one page.
+- [Glossary](GLOSSARY.md): every term used, in plain language.
+
+## Notes for instructors and maintainers
+
+- Checkers compute expected values from the data themselves (nothing is hard-coded to one dataset).
+- Data: the reference genome and 100 real read pairs come from the public nf-core test-datasets
+  (checksummed in `00_getting_started/data.sha256`); larger samples are simulated with `wgsim` by a job.
+- Container versions are pinned in `containers.conf`.
+- `tests/lint.sh` runs static checks (no cluster needed); run it before committing changes.

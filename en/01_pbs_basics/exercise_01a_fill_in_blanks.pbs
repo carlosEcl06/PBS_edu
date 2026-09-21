@@ -1,0 +1,43 @@
+#!/bin/bash
+# Exercise 1a -- fill in the blanks (___) to make this job valid and working.
+#
+# Goal: count the reads and bases in test_1.fastq.gz.
+#   * the job needs 1 CPU, 1 GB of memory and at most 5 minutes
+#   * stderr must be merged into stdout (one log file)
+#   * a FASTQ record is 4 lines long; the sequence is line 2 of each record
+#
+# Then:   qsub exercise_01a_fill_in_blanks.pbs
+#         ./check_01a.sh
+#
+# If a #PBS line is malformed, qsub refuses the script immediately and tells you
+# which line. That is normal: read the message, fix, resubmit.
+# Remember: comments on #PBS lines must be on their own line, as here.
+
+# a short name, letters/digits/underscore, starting with a letter (e.g. count_fq)
+#PBS -N ___
+# fill in the number of CPUs and the gigabytes of memory
+#PBS -l select=1:ncpus=___:mem=___gb
+# five minutes = 00:05:00 (fill in the single missing digit)
+#PBS -l walltime=00:0___:00
+# the option letters that merge stdout and stderr are "oe"
+#PBS -j ___
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+
+FASTQ="$DATA_DIR/real/test_1.fastq.gz"
+OUT="$WORKDIR/01_pbs_basics"
+mkdir -p "$OUT"
+
+# total number of lines, then divide by lines-per-record
+lines=$(zcat "$FASTQ" | wc -l)
+reads=$(( lines / ___ ))
+
+# sum the length of every sequence line (awk's length($0) gives the length of a line)
+bases=$(zcat "$FASTQ" | awk 'NR % 4 == 2 { n += ___($0) } END { print n }')
+
+echo "reads: $reads"
+echo "bases: $bases"
+echo "$reads" > "$OUT/read_count.txt"
+echo "$bases" > "$OUT/base_count.txt"

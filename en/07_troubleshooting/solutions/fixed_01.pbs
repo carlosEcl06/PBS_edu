@@ -1,0 +1,22 @@
+#!/bin/bash
+# Solution to broken job 1.
+# Cause: the relative path data/real/... was resolved against the current directory
+# (the section directory), where no such folder exists. zcat printed an error, wc -l
+# counted zero lines, and the script happily wrote "reads: 0" with exit status 0.
+# Lessons: use absolute paths built from $DATA_DIR; check RESULTS, not only the exit
+# status; "set -o pipefail" plus a sanity check on the value would have caught it.
+
+#PBS -N broken_01
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+OUT="$WORKDIR/07_troubleshooting"
+mkdir -p "$OUT"
+
+# number of reads in the real test file (4 lines per read)
+reads=$(( $(zcat "$DATA_DIR/real/test_1.fastq.gz" | wc -l) / 4 ))
+echo "reads: $reads"
+echo "reads: $reads" > "$OUT/broken_01.ok"

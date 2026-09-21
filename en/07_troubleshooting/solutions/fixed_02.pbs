@@ -1,0 +1,32 @@
+#!/bin/bash
+# Solution to broken job 2.
+# Cause: walltime=00:00:20 was shorter than the alignments plus the 30 s final step.
+# PBS kills the job when time is up: nothing is printed by your script, the log just
+# stops. Look at qstat -xf <jobid>: Exit_status = 271 (256 + SIGTERM) and
+# resources_used.walltime just above the request.
+# Fix: request about 2x the expected time. Measure it (section 03) instead of guessing.
+
+#PBS -N broken_02
+#PBS -l select=1:ncpus=1:mem=2gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_preflight || exit 1
+set -o pipefail
+OUT="$WORKDIR/07_troubleshooting"
+mkdir -p "$OUT/b02"
+
+for id in sample_01 sample_02; do
+    echo "[$(date +%T)] aligning $id"
+    edu_exec minimap2 -t 1 -ax sr "$DATA_DIR/ref/genome.fasta" \
+        "$DATA_DIR/samples/${id}_R1.fastq.gz" "$DATA_DIR/samples/${id}_R2.fastq.gz" 2> "$OUT/b02/$id.log" \
+        | edu_exec samtools sort -T "$OUT/b02/$id.tmp" -o "$OUT/b02/$id.bam" - || exit 1
+done
+
+# stand-in for a slow final step (index building, checksums, copying to a slow disk...)
+echo "[$(date +%T)] finalising"
+sleep 30
+
+echo "aligned: 2 samples" > "$OUT/broken_02.ok"

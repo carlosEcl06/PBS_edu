@@ -1,0 +1,36 @@
+#!/bin/bash
+# Exercise 2c -- bind mounts. Fill in the blank (___).
+#
+# --containall starts the container in a strict mode: nothing from the host is
+# shared automatically (no home directory, no current directory). Whatever the
+# tool needs must be listed in --bind. Many sites are more relaxed by default,
+# but a script that binds explicitly works EVERYWHERE, so this is the habit to learn.
+#
+# Goal: run seqkit on the two reads of simulated sample_01 and save the table
+# to $WORKDIR/02_containers/bind_ok.tsv. The tool must read the data from
+# $DATA_DIR and write to $WORKDIR, so both must be bound.
+#
+#   qsub exercise_02c_bind_mounts.pbs
+#   ./check_02c.sh
+
+#PBS -N ex02c
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+
+OUT="$WORKDIR/02_containers"
+mkdir -p "$OUT"
+
+# seqkit writes to stdout, and the SHELL (outside the container) redirects it
+# to a file. So does the container need $WORKDIR at all? Think, then decide.
+"$CONTAINER_RUNTIME" exec --containall \
+    --bind "___" \
+    "$SIF_CACHE/seqkit.sif" \
+    seqkit stats -T "$DATA_DIR/samples/sample_01_R1.fastq.gz" "$DATA_DIR/samples/sample_01_R2.fastq.gz" \
+    > "$OUT/bind_ok.tsv"
+
+cat "$OUT/bind_ok.tsv"

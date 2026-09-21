@@ -1,0 +1,31 @@
+#!/bin/bash
+# Exercise 4a -- fill in the blanks (___): one array sub-job per sample.
+#
+# Goal: for each of the 6 samples, run `seqkit stats -T` on its R1 and R2 files and
+# save the table to $WORKDIR/04_job_arrays/stats/<sample>.stats.tsv
+#
+#   qsub exercise_04a_fill_in_blanks.pbs
+#   ./check_04a.sh
+
+#PBS -N ex04a
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+# the sub-jobs are numbered 1 to the number of samples (wc -l < samples.tsv)
+#PBS -J 1-___
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+edu_preflight || exit 1
+
+# The environment variable that holds this sub-job's number is PBS_ARRAY_INDEX
+line="$(sed -n "${___}p" "$DATA_DIR/samples/samples.tsv")"
+IFS=$'\t' read -r id r1 r2 <<< "$line"
+[ -n "$id" ] || { echo "no sample for this index" >&2; exit 1; }
+
+OUT="$WORKDIR/04_job_arrays/stats"
+mkdir -p "$OUT"
+
+edu_exec seqkit stats -T "$r1" "$r2" > "$OUT/___.stats.tsv"
+echo "finished $id"

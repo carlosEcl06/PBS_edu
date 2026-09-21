@@ -1,0 +1,26 @@
+#!/bin/bash
+# Solution to exercise 2c.
+#
+# Only $DATA_DIR needs binding: seqkit writes to stdout and the redirection
+# (> file) is done by the shell OUTSIDE the container. Binding $WORKDIR as well
+# is harmless and is required when a tool writes files itself (like FastQC).
+
+#PBS -N ex02c
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+
+OUT="$WORKDIR/02_containers"
+mkdir -p "$OUT"
+
+"$CONTAINER_RUNTIME" exec --containall \
+    --bind "$DATA_DIR" \
+    "$SIF_CACHE/seqkit.sif" \
+    seqkit stats -T "$DATA_DIR/samples/sample_01_R1.fastq.gz" "$DATA_DIR/samples/sample_01_R2.fastq.gz" \
+    > "$OUT/bind_ok.tsv"
+
+cat "$OUT/bind_ok.tsv"

@@ -1,0 +1,35 @@
+#!/bin/bash
+# Exercise 2a -- fill in the blanks (___): run seqkit from its container.
+#
+# Goal: write the statistics of both real FASTQ files, in tab-separated form,
+# to $WORKDIR/02_containers/seqkit_stats.tsv.
+#
+#   qsub exercise_02a_fill_in_blanks.pbs
+#   ./check_02a.sh
+
+#PBS -N ex02a
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+
+OUT="$WORKDIR/02_containers"
+mkdir -p "$OUT"
+
+# the image file is named after the tool: seqkit.sif
+SIF="$SIF_CACHE/___.sif"
+
+# Run a command inside a container with "exec". Make the data directory and the
+# output directory visible with --bind (comma-separated list of directories).
+# The seqkit subcommand that summarises a file is "stats"; -T gives a table.
+"$CONTAINER_RUNTIME" ___ \
+    --bind "___,___" \
+    "$SIF" \
+    seqkit ___ -T \
+    "$DATA_DIR/real/test_1.fastq.gz" "$DATA_DIR/real/test_2.fastq.gz" \
+    > "$OUT/seqkit_stats.tsv"
+
+cat "$OUT/seqkit_stats.tsv"

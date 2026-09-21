@@ -1,3 +1,5 @@
+> ⚠️ **Versão desatualizada.** Esta tradução descreve a primeira versão do curso e cita um servidor específico. O curso em inglês (`../en/`) foi reescrito e é a versão mantida; esta pasta será retraduzida depois.
+
 # PBS_edu — agendamento de jobs neste cluster compartilhado
 
 Um guia prático para rodar jobs de computação neste servidor da forma correta:

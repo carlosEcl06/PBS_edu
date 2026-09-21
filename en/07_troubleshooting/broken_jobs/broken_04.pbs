@@ -1,0 +1,34 @@
+#!/bin/bash
+# Broken job 4.
+# Symptom: the job dies halfway. The first files were processed, the rest were not,
+# and the error only appears after some work has already been done.
+#
+# Submit from the section directory:  qsub broken_jobs/broken_04.pbs
+# Your task: work out why it fails, fix THIS file (edit it in place; git checkout restores the original),
+# resubmit from the section directory and check with ./check_07.sh 4
+
+#PBS -N broken_04
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_preflight || exit 1
+set -e
+OUT="$WORKDIR/07_troubleshooting/b04"
+mkdir -p "$OUT"
+
+FILES=(
+    "$DATA_DIR/samples/sample_01_R1.fastq.gz"
+    "$DATA_DIR/samples/sample_02_R1.fastq.gz"
+    "$DATA_DIR/samples/sample_3_R1.fastq.gz"
+    "$DATA_DIR/samples/sample_04_R1.fastq.gz"
+)
+
+for f in "${FILES[@]}"; do
+    echo "processing $f"
+    edu_exec seqkit stats -T "$f" > "$OUT/$(basename "$f").tsv"
+done
+
+echo "processed: ${#FILES[@]}" > "$WORKDIR/07_troubleshooting/broken_04.ok"

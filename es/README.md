@@ -1,3 +1,5 @@
+> ⚠️ **Versión desactualizada.** Esta traducción describe la primera versión del curso y menciona un servidor concreto. El curso en inglés (`../en/`) fue reescrito y es la versión mantenida; esta carpeta se volverá a traducir más adelante.
+
 # PBS_edu — planificación de trabajos en este clúster compartido
 
 Una guía práctica para ejecutar trabajos de cómputo en este servidor de la forma

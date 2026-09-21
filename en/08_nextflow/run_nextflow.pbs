@@ -1,0 +1,25 @@
+#!/bin/bash
+# Run the Nextflow "head process" as a PBS job, for sites that do not want long-running
+# programs on the login node. The head job itself needs little; it submits one PBS job
+# per pipeline task. Give it a walltime longer than the whole pipeline.
+#
+#   qsub run_nextflow.pbs
+#   PIPELINE=exercise_08a_add_stats.nf qsub -v PIPELINE run_nextflow.pbs
+
+#PBS -N nf_head
+#PBS -l select=1:ncpus=1:mem=2gb
+#PBS -l walltime=02:00:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+
+# Nextflow needs Java 17+. If your site provides it as a module, load it here:
+#   module load java
+command -v nextflow >/dev/null 2>&1 || { echo "nextflow not found in PATH (see README: installing Nextflow)" >&2; exit 1; }
+[ -f nextflow.config ] || ./make_config.sh || exit 1
+
+export NXF_OPTS="-Xms256m -Xmx1g"
+export NXF_ANSI_LOG=false
+nextflow run "${PIPELINE:-main.nf}" -resume

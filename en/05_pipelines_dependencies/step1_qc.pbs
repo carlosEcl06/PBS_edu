@@ -1,0 +1,29 @@
+#!/bin/bash
+# Pipeline step 1 (array): trim and QC each sample with fastp.
+# Not meant to be submitted by hand: the driver scripts do it.
+
+#PBS -N pipe_qc
+#PBS -l select=1:ncpus=2:mem=2gb
+#PBS -l walltime=00:10:00
+#PBS -J 1-6
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_preflight || exit 1
+
+OUT="$WORKDIR/05_pipelines_dependencies"
+EDU_TIMELINE="$OUT/timeline.tsv"
+mkdir -p "$OUT/clean"
+edu_stamp step1 start
+
+line="$(sed -n "${PBS_ARRAY_INDEX}p" "$DATA_DIR/samples/samples.tsv")"
+IFS=$'\t' read -r id r1 r2 <<< "$line"
+[ -n "$id" ] || { echo "no sample on line $PBS_ARRAY_INDEX" >&2; exit 1; }
+
+edu_exec fastp -i "$r1" -I "$r2" \
+    -o "$OUT/clean/${id}_R1.clean.fastq.gz" -O "$OUT/clean/${id}_R2.clean.fastq.gz" \
+    -j "$OUT/clean/${id}.fastp.json" -h "$OUT/clean/${id}.fastp.html" \
+    --thread "$(edu_threads)" || exit 1
+
+edu_stamp step1 end

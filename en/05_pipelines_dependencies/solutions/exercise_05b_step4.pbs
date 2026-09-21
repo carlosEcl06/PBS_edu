@@ -1,0 +1,25 @@
+#!/bin/bash
+# One possible solution to exercise 5b. Submit it AFTER step 3, e.g. by adding to a driver:
+#
+#   J4="$(edu_qsub -W depend=afterok:"$J3" solutions/exercise_05b_step4.pbs)"
+#
+# (qsub from the section directory so that PBS_O_WORKDIR is right.)
+
+#PBS -N pipe_report
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+
+OUT="$WORKDIR/05_pipelines_dependencies"
+EDU_TIMELINE="$OUT/timeline.tsv"
+edu_stamp step4 start
+
+# NR > 1 skips the header; column 4 is mapped_pct
+awk -F'\t' 'NR > 1 { n++; if ($4 >= 95) ok++ }
+            END { printf "samples: %d\nwell_mapped: %d\n", n, ok }' "$OUT/summary.tsv" > "$OUT/report.txt"
+cat "$OUT/report.txt"
+
+edu_stamp step4 end

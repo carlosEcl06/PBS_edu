@@ -1,0 +1,25 @@
+#!/bin/bash
+# Solution to exercise 2a. Submit from the section directory: qsub solutions/exercise_02a.pbs
+
+#PBS -N ex02a
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+
+OUT="$WORKDIR/02_containers"
+mkdir -p "$OUT"
+
+SIF="$SIF_CACHE/seqkit.sif"
+
+"$CONTAINER_RUNTIME" exec \
+    --bind "$DATA_DIR,$WORKDIR" \
+    "$SIF" \
+    seqkit stats -T \
+    "$DATA_DIR/real/test_1.fastq.gz" "$DATA_DIR/real/test_2.fastq.gz" \
+    > "$OUT/seqkit_stats.tsv"
+
+cat "$OUT/seqkit_stats.tsv"

@@ -1,0 +1,25 @@
+#!/bin/bash
+# Broken job 5.
+# Symptom: the job fails within a second, with an error from the container runtime,
+# before the tool even starts.
+#
+# Submit from the section directory:  qsub broken_jobs/broken_05.pbs
+# Your task: work out why it fails, fix THIS file (edit it in place; git checkout restores the original),
+# resubmit from the section directory and check with ./check_07.sh 5
+
+#PBS -N broken_05
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+OUT="$WORKDIR/07_troubleshooting"
+mkdir -p "$OUT"
+
+# statistics of the reference genome, seen as /refs inside the container
+"$CONTAINER_RUNTIME" exec --bind "$DATA_DIR/refs:/refs,$WORKDIR" "$SIF_CACHE/seqkit.sif" \
+    seqkit stats -T /refs/genome.fasta > "$OUT/ref_stats.tsv" \
+    || { echo "seqkit failed" >&2; exit 1; }
+
+echo "ok: $(wc -l < "$OUT/ref_stats.tsv") lines" > "$OUT/broken_05.ok"

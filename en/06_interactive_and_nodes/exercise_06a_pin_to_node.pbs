@@ -1,0 +1,29 @@
+#!/bin/bash
+# Exercise 6a -- ask PBS for one specific node.
+#
+# Most of the time you should let the scheduler pick the node. Pinning is for
+# special cases: reproducing a problem seen on one node, or using something only
+# that node has. Here you practise the syntax.
+#
+#   1. ./check_free_nodes.sh 1 1       pick a node with room, e.g. node07
+#   2. replace ___ below with that node's name (just the name, e.g. host=node07)
+#   3. qsub exercise_06a_pin_to_node.pbs
+#   4. ./check_06a.sh   (compares where the job ran with what you asked for)
+
+#PBS -N ex06a
+#PBS -l select=1:ncpus=1:mem=1gb:host=___
+#PBS -l walltime=00:02:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+
+OUT="$WORKDIR/06_interactive_and_nodes"
+mkdir -p "$OUT"
+{
+    echo "host: $(hostname)"
+    echo "job_id: $PBS_JOBID"
+    echo "nodefile: $(sort -u "$PBS_NODEFILE" | tr '\n' ' ')"
+} > "$OUT/pinned.txt"
+cat "$OUT/pinned.txt"

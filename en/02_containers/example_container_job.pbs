@@ -1,0 +1,35 @@
+#!/bin/bash
+# Run a real bioinformatics tool (seqkit) from a container. Submit from this directory:
+#   qsub example_container_job.pbs
+# Read the log (example_container.o<jobid>) and compare "inside" and "outside".
+
+#PBS -N example_container
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+edu_preflight || exit 1
+
+SIF="$SIF_CACHE/seqkit.sif"
+
+echo "--- 1. The tool inside the container"
+"$CONTAINER_RUNTIME" exec "$SIF" seqkit version
+
+echo "--- 2. Is seqkit installed on this compute node itself?"
+command -v seqkit || echo "no: seqkit exists only inside the container"
+
+echo "--- 3. The operating system inside vs outside"
+echo "inside : $("$CONTAINER_RUNTIME" exec "$SIF" sh -c '. /etc/os-release 2>/dev/null; echo "${PRETTY_NAME:-unknown}"')"
+echo "outside: $(. /etc/os-release 2>/dev/null; echo "${PRETTY_NAME:-unknown}")"
+
+echo "--- 4. Real work: statistics of the two real read files"
+# --bind makes a host directory visible inside the container. Without it the
+# tool may not be able to see your data (depends on how the site is configured).
+"$CONTAINER_RUNTIME" exec --bind "$DATA_DIR" "$SIF" \
+    seqkit stats "$DATA_DIR/real/test_1.fastq.gz" "$DATA_DIR/real/test_2.fastq.gz"
+
+echo "--- 5. The same thing with the course helper (see lib/edu.sh)"
+edu_exec seqkit stats "$DATA_DIR/real/test_1.fastq.gz"

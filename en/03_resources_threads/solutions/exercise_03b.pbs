@@ -1,0 +1,37 @@
+#!/bin/bash
+# One possible solution to exercise 3b: 4 CPUs, 4 GB, 5 minutes.
+#
+# How to reason: the 3a table showed the job takes about X seconds with 4 CPUs,
+# so 5 minutes is a wide margin. 4 GB comes from minimap2 (small index here) plus
+# samtools sort (4 threads x 256 MB buffers). Memory is checked after the fact with
+#   qstat -xf <jobid> | grep resources_used.mem
+# Any values in the same ballpark are fine, the checker only rejects extremes.
+
+#PBS -N ex03b
+#PBS -l select=1:ncpus=4:mem=4gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+edu_preflight || exit 1
+set -o pipefail
+
+THREADS="$(edu_threads)"
+OUT="$WORKDIR/03_resources_threads"
+RUN="$OUT/ex03b_run"
+mkdir -p "$RUN"
+rm -f "$OUT/right_size.done"
+
+START=$(date +%s)
+while IFS=$'\t' read -r id r1 r2; do
+    echo "[$(date +%T)] aligning $id with $THREADS thread(s)"
+    edu_exec minimap2 -t "$THREADS" -ax sr "$DATA_DIR/ref/genome.fasta" "$r1" "$r2" 2> "$RUN/$id.log" \
+        | edu_exec samtools sort -@ "$((THREADS - 1))" -m 256M -T "$RUN/$id.tmp" -o "$RUN/$id.bam" - \
+        || exit 1
+done < "$DATA_DIR/samples/samples.tsv"
+
+echo "threads=$THREADS seconds=$(( $(date +%s) - START ))" > "$OUT/right_size.done"
+rm -rf "$RUN"
+echo "Finished."

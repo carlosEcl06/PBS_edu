@@ -1,0 +1,23 @@
+#!/bin/bash
+# Solution to broken job 5.
+# Cause: the directory is called "ref", not "refs". Apptainer refuses to bind a source
+# that does not exist ("FATAL: ... mount source ... doesn't exist") and never starts the tool.
+# Lesson: read the FIRST error in the log; check paths with ls; the same error appears for
+# any wrong --bind source.
+
+#PBS -N broken_05
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+OUT="$WORKDIR/07_troubleshooting"
+mkdir -p "$OUT"
+
+# statistics of the reference genome, seen as /refs inside the container
+"$CONTAINER_RUNTIME" exec --bind "$DATA_DIR/ref:/refs,$WORKDIR" "$SIF_CACHE/seqkit.sif" \
+    seqkit stats -T /refs/genome.fasta > "$OUT/ref_stats.tsv" \
+    || { echo "seqkit failed" >&2; exit 1; }
+
+echo "ok: $(wc -l < "$OUT/ref_stats.tsv") lines" > "$OUT/broken_05.ok"
