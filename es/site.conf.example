@@ -1,0 +1,29 @@
+# Copia de referencia de site.conf. Normalmente NO editas este archivo:
+# 00_getting_started/setup.sh descubre estos valores y escribe ../site.conf.
+# Si prefieres hacerlo a mano:  cp site.conf.example site.conf  y edítalo.
+#
+# Este archivo es bash puro, cargado por todos los scripts a través de lib/edu.sh.
+# $EDU_ROOT es el directorio es/ de este repositorio.
+
+# Cola a la que enviar. Déjala vacía si tu cluster tiene una cola por defecto (casi
+# todos la tienen): así los scripts nunca mencionan una cola. Si qsub se queja de
+# que no se indicó ninguna cola, pon su nombre aquí; edu_qsub la usará.
+EDU_QUEUE=""
+
+# Dónde vive cada cosa. Los tres deben estar en un sistema de archivos que vean los
+# nodos de cómputo (normalmente tu home, un área de proyecto o scratch -- NO el /tmp
+# del nodo de login). Juntos necesitan alrededor de 1 GB con los valores de abajo.
+DATA_DIR="$EDU_ROOT/data"     # referencia descargada + lecturas reales de prueba + muestras simuladas
+WORKDIR="$EDU_ROOT/work"      # resultados escritos por tus jobs
+SIF_CACHE="$EDU_ROOT/sif"     # imágenes de contenedor (archivos .sif)
+
+# "apptainer" o "singularity" (el nombre antiguo de la misma herramienta).
+CONTAINER_RUNTIME="apptainer"
+
+# Directorios extra del host que tus jobs necesitan dentro de los contenedores, separados por comas.
+# Ejemplo: BIND_PATHS="/project/shared,/scratch"
+BIND_PATHS=""
+
+# Conjunto de datos simulado que se usa a partir de la sección 03.
+N_SAMPLES=6
+READS_PER_SAMPLE=300000       # pares de lecturas por muestra; bájalo si te falta espacio

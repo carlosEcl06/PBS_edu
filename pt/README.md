@@ -1,64 +1,89 @@
-> ⚠️ **Versão desatualizada.** Esta tradução descreve a primeira versão do curso e cita um servidor específico. O curso em inglês (`../en/`) foi reescrito e é a versão mantida; esta pasta será retraduzida depois.
+# PBS para bioinformática: um curso prático
 
-# PBS_edu — agendamento de jobs neste cluster compartilhado
+> [!NOTE]
+> **Tradução em andamento.** As seções **00** e **01** estão traduzidas e em dia com o curso em inglês.
+> As seções **02 a 08** ainda existem só [em inglês](../en/README.md): os links do roteiro abaixo levam
+> direto a elas, e você pode continuar lá com a mesma configuração (veja o fim da [seção 01](01_pbs_basics/README.md#próximo-passo-continuar-em-inglês)).
 
-Um guia prático para rodar jobs de computação neste servidor da forma correta:
-usando o escalonador PBS, nunca no nó de login, com containers fixados em versões
-exatas. Os exemplos aqui vêm de um pipeline real de filogenômica construído neste
-mesmo servidor — inclusive alguns dos problemas que apareceram no caminho.
+Aprenda a rodar análises reais num cluster de computação compartilhado com o PBS, fazendo. Cada exercício é um
+job que você submete, roda sobre dados de sequenciamento reais (ou simulados de forma realista) com ferramentas
+reais, e confere com um verificador automático.
 
-## Por que isso existe
+**Para quem é:** biólogos, estudantes e analistas que conhecem o básico de Linux (`cd`, `ls`, `nano`) e acabaram de
+receber uma conta num cluster.
+**O que você vai conseguir fazer depois:** escrever e submeter scripts de job, escolher CPU/memória/tempo com
+critério, processar muitas amostras em paralelo, encadear etapas num pipeline, rodar ferramentas a partir de
+containers e descobrir por que um job falhou.
+**Tempo:** cerca de 6–8 horas no total; cada seção se sustenta sozinha (45–60 min) e se apoia na anterior.
 
-Este é um servidor compartilhado, usado por várias pessoas ao mesmo tempo. O nó de
-login (`pne2`) serve para editar arquivos, submeter jobs e fazer orquestração leve —
-**não para rodar nada que use CPU ou memória de verdade**. Os jobs de todo mundo passam
-pelo PBS, que os distribui entre os nós de computação (`pne3` até `pne10`,
-disponibilidade varia). Se você rodar sua análise direto no `pne2` em vez de submetê-la
-como job, você não está só quebrando uma regra — está usando CPU que pertence ao nó
-compartilhado de login/orquestração, do qual todo mundo depende (inclusive quem só
-quer dar um `cd` e checar o status do próprio job).
+---
 
-A boa notícia: depois que você faz duas ou três vezes, submeter um job PBS não é mais
-difícil do que rodar um comando direto. Este guia leva você até lá.
+## Por que um curso? A versão de um parágrafo
 
-## Como usar esta pasta
+Um cluster é compartilhado por muita gente. Você entra num **nó de login** para preparar o trabalho e submete
+**jobs** a um escalonador (PBS), que os roda em **nós de computação** quando há recursos livres. Análises que
+precisam de CPU ou memória de verdade vão em jobs, nunca no nó de login. Essa regra, mais um punhado de comandos
+(`qsub`, `qstat`, `qdel`), cobre 90% do uso diário. O resto do curso são os outros 10%: fazer isso com eficiência
+e consertar quando quebra.
 
-Percorra os diretórios numerados em ordem. Cada um tem:
-- um `README.md` explicando o conceito,
-- um ou mais **exemplos funcionais** que você pode submeter como estão para ver como é
-  um job de verdade, do início ao fim,
-- um ou mais **exercícios** — o mesmo tipo de script, mas com partes importantes em
-  branco (`___`), para você preencher e submeter sozinho(a).
+## O roteiro
 
-Nada aqui mexe em dados reais de projeto. Todo exercício submete um job trivial (roda
-em segundos, usa recursos mínimos) para você poder iterar rápido sem se preocupar em
-consumir recursos compartilhados enquanto ainda está aprendendo.
+| # | Seção | Você vai | Dados / ferramentas | Tradução |
+|---|---|---|---|---|
+| 00 | [Primeiros passos](00_getting_started/README.md) | conectar, rodar a configuração, submeter seu primeiro job | referência do SARS-CoV-2 + reads reais | ✅ em dia |
+| 01 | [Básico do PBS](01_pbs_basics/README.md) | escrever, submeter, acompanhar e depurar um job | zcat, awk | ✅ em dia |
+| 02 | [Containers](../en/02_containers/README.md) | rodar ferramentas de bioinformática sem instalá-las | seqkit, FastQC | ⏳ só em inglês |
+| 03 | [Recursos e threads](../en/03_resources_threads/README.md) | medir um job e pedir as CPUs, memória e tempo certos | minimap2, samtools | ⏳ só em inglês |
+| 04 | [Job arrays](../en/04_job_arrays/README.md) | um job por amostra, rodar de novo só as falhas | fastp, seqkit | ⏳ só em inglês |
+| 05 | [Pipelines e dependências](../en/05_pipelines_dependencies/README.md) | encadear QC → alinhamento → resumo | fastp, minimap2, samtools | ⏳ só em inglês |
+| 06 | [Jobs interativos e nós](../en/06_interactive_and_nodes/README.md) | testar ao vivo num nó de computação, ler o estado dos nós | pbsnodes | ⏳ só em inglês |
+| 07 | [Solução de problemas](../en/07_troubleshooting/README.md) | diagnosticar seis jobs quebrados | logs, qstat | ⏳ só em inglês |
+| 08 | [Nextflow](../en/08_nextflow/README.md) (opcional) | rodar e estender um pipeline de gerenciador de workflows | Nextflow | ⏳ só em inglês |
 
-1. **`01_basico_pbs/`** — submeter, checar e cancelar um job. Comece por aqui mesmo se
-   já usou PBS/Slurm em outro lugar — as flags e as particularidades mudam de cluster
-   para cluster.
-2. **`02_selecao_de_nos/`** — checar quais nós de computação estão realmente livres, e
-   fixar seu job explicitamente em um deles. Importa mais aqui do que em alguns outros
-   clusters, por motivos explicados nessa seção.
-3. **`03_containers_apptainer/`** — rodar software a partir de um container em vez de
-   brigar com resolução de dependências do `conda`/`module load`. Esse é o padrão
-   recomendado para qualquer ferramenta que não seja trivial de instalar.
-4. **`04_problemas_comuns/`** — bugs reais encontrados construindo um pipeline de
-   produção neste exato servidor, escritos como lições em vez de deixados apenas como
-   conhecimento tácito.
-5. **`05_nextflow_avancado/`** (opcional, depois que o básico estiver natural) —
-   orquestrar um pipeline com várias etapas (muitos jobs, dependências entre eles) com
-   o executor PBS do Nextflow em vez de encadear `qsub` manualmente.
+Faça a 00 primeiro, depois 01–05 em ordem. A 06 e a 07 podem ser feitas a qualquer momento depois da 01. A 08 é opcional.
 
-## A versão de um parágrafo, se você não ler mais nada
+## Do que você precisa
 
-Nunca rode computação de verdade no `pne2`. Antes de submeter um job, cheque quais nós
-de computação estão realmente livres (`pbsnodes <nó>`) em vez de simplesmente assumir —
-este servidor nem sempre suporta excluir um nó específico, só fixar *em* um, então se
-você não checar antes pode acabar preso na fila atrás do job de outra pessoa, ou
-agendado silenciosamente num nó com um problema conhecido. Prefira containers
-Apptainer fixados numa versão exata a `conda`/pacotes do sistema para qualquer coisa
-além de um script de uma linha. E quando um job baseado em container não conseguir
-encontrar um arquivo que está visível no seu shell de login, verifique se o caminho
-está realmente montado (bind-mount) dentro do container antes de assumir que seus
-dados sumiram — veja `04_problemas_comuns/`.
+- Uma conta num cluster PBS (OpenPBS ou PBS Professional) e um terminal com `ssh`.
+- `git` (ou outra forma de copiar esta pasta para o cluster), `bash`.
+- Apptainer ou Singularity no cluster (comum em clusters acadêmicos; o script de configuração avisa se faltar).
+- Cerca de 1 GB de disco num diretório que os nós de computação enxerguem, e acesso à internet a partir do nó de
+  login para os downloads iniciais.
+
+Você **não** precisa de permissão de administrador, de ferramentas de bioinformática instaladas nem de
+experiência prévia com escalonadores.
+
+## Como cada seção funciona
+
+1. Leia o `README.md` da seção (objetivos, conceitos, tabela "se algo der errado").
+2. Rode os **exemplos** (`example_*.pbs`): funcionam do jeito que estão. Leia os comentários.
+3. Faça os **exercícios**: `exercise_*.pbs` (preencher lacunas, consertar um job quebrado ou escrever um do zero).
+4. Rode o **verificador** da seção (`check_*.sh`). Ele inspeciona as saídas reais dos seus jobs e diz o que está
+   errado e onde procurar. Verificadores nunca mudam nada.
+5. Compare com `solutions/` só depois de tentar.
+
+**Convenções para lembrar**
+- Submeta jobs **a partir do diretório da seção**: `cd 01_pbs_basics; qsub example_count_reads.pbs`.
+- As particularidades do seu cluster ficam em `site.conf` (escrito por `00_getting_started/setup.sh`). Nenhum
+  script fixa fila, nó ou caminho. Veja `examples/site.pne.conf` para um exemplo preenchido.
+- `lib/edu.sh` reúne pequenas funções compartilhadas (curtas, legíveis, vale a pena ler).
+- Os logs dos jobs aparecem no diretório de submissão, com o nome `<nomedojob>.o<jobid>`, quando o job termina.
+- Os arquivos de resultado que seus jobs criam vão para `$WORKDIR` (do `site.conf`), uma subpasta por seção.
+  Dentro de cada diretório de seção, **`results/`** é um atalho para essa pasta (criado automaticamente):
+  `ls results/`. O próprio `$WORKDIR` só fica definido depois de `source lib/edu.sh`.
+- Os nomes de arquivos e pastas são os mesmos da versão em inglês, para que os comandos sejam idênticos nas duas.
+
+## Extras
+
+- [Cheat sheet](../en/CHEATSHEET.md) (em inglês): os comandos e a anatomia de um script numa página.
+- [Glossário](../en/GLOSSARY.md) (em inglês): todos os termos usados, em linguagem simples.
+
+## Notas para instrutores e mantenedores
+
+- A versão em inglês (`../en/`) é a referência; esta pasta traduz comentários, mensagens e textos, sem mudar o
+  comportamento dos scripts.
+- Os verificadores calculam os valores esperados a partir dos próprios dados (nada fixado num conjunto de dados).
+- Dados: o genoma de referência e os 100 pares de reads reais vêm dos test-datasets públicos do nf-core
+  (com checksums em `00_getting_started/data.sha256`); as amostras maiores são simuladas com `wgsim` por um job.
+- As versões dos containers ficam fixadas em `containers.conf`.
+- `../en/tests/lint.sh pt` roda as verificações estáticas nesta pasta (não precisa de cluster).

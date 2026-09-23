@@ -20,13 +20,16 @@ discovers your cluster's queue, container tool and storage, so nothing is hard-c
 
 ## Other languages
 
-| Folder | Language | Status |
-|---|---|---|
-| [`pt/`](pt/) | Português (Brasil) | **outdated**: translation of the first version of the course |
-| [`fr/`](fr/) | Français | **outdated** |
-| [`es/`](es/) | Español | **outdated** |
+The translations are being rebuilt from the rewritten English course, one section at a time.
+Each one mirrors the English file layout, so commands are identical in every language.
 
-The English course was substantially rewritten (new sections on resources, job arrays,
-pipelines and troubleshooting, real bioinformatics exercises, cluster-independent setup).
-The translations still describe the earlier, shorter version and refer to a specific
-server; they will be re-translated once the English content is stable.
+| Folder | Language | 00 · Getting started | 01 · PBS basics | 02–08 |
+|---|---|:---:|:---:|---|
+| [`pt/`](pt/README.md) | Português (Brasil) | ✅ | ✅ | ⏳ not yet translated: links lead to the English sections |
+| [`fr/`](fr/README.md) | Français | ✅ | ✅ | ⏳ not yet translated: links lead to the English sections |
+| [`es/`](es/README.md) | Español | ✅ | ✅ | ⏳ not yet translated: links lead to the English sections |
+
+✅ translated and up to date with `en/` · ⏳ English only for now
+
+A learner can start in their own language and switch to English at section 02 without redoing the
+setup: the end of each translated section 01 shows how (`cp site.conf ../en/site.conf`).

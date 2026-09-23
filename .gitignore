@@ -1,12 +1,12 @@
 # Generated for your own cluster by 00_getting_started/setup.sh
-en/site.conf
-en/site.conf.bak
+*/site.conf
+*/site.conf.bak
 
 # Downloaded / simulated data, container images, job results
-en/data/
-en/work/
-en/*/results
-en/sif/
+*/data/
+*/work/
+*/*/results
+*/sif/
 
 # PBS job logs (name.o12345, name.e12345, array sub-jobs name.o12345[1])
 *.o[0-9]*
@@ -19,4 +19,4 @@ en/08_nextflow/work/
 en/08_nextflow/results/
 
 # Your answers in exercises
-en/*/my_choice.txt
+*/*/my_choice.txt

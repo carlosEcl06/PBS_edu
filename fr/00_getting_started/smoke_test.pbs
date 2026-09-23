@@ -1,0 +1,19 @@
+#!/bin/bash
+#PBS -N smoke_test
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+# Job minuscule utilisé par check_env.sh. Il vérifie ce qu'un nœud de calcul doit
+# savoir faire pour le reste du cours : voir vos fichiers et lancer un conteneur.
+
+cd "$PBS_O_WORKDIR" || { echo "SMOKE FAIL : impossible d'aller dans le répertoire de soumission"; exit 1; }
+source ../lib/edu.sh || { echo "SMOKE FAIL : impossible de charger lib/edu.sh"; exit 1; }
+edu_banner
+
+edu_preflight || { echo "SMOKE FAIL : ce nœud ne voit pas les données/images ou n'a pas de runtime de conteneurs"; exit 1; }
+"$CONTAINER_RUNTIME" --version
+edu_exec seqkit version || { echo "SMOKE FAIL : impossible de lancer un conteneur sur ce nœud"; exit 1; }
+[ -s "$DATA_DIR/ref/genome.fasta" ] || { echo "SMOKE FAIL : la référence n'est pas lisible depuis ce nœud"; exit 1; }
+
+echo "SMOKE OK sur $(hostname)"

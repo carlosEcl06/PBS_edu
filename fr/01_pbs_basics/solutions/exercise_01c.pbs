@@ -1,0 +1,25 @@
+#!/bin/bash
+# Une solution possible de l'exercice 1c. La vôtre peut être différente, tant que
+# le fichier de sortie a le bon contenu.
+
+#PBS -N ref_stats
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+
+OUT="$WORKDIR/01_pbs_basics"
+mkdir -p "$OUT"
+
+# Les lignes d'en-tête commencent par ">", toutes les autres sont de la séquence.
+# gsub() renvoie le nombre de caractères G/C remplacés, ce qui fait un compteur pratique.
+awk '/^>/ { n++; next }
+     { len += length($0); gc += gsub(/[GCgc]/, "") }
+     END { printf "sequences: %d\nlength: %d\ngc_percent: %.2f\n", n, len, 100 * gc / len }' \
+    "$DATA_DIR/ref/genome.fasta" > "$OUT/reference_stats.txt"
+
+echo "job_id: $PBS_JOBID" >> "$OUT/reference_stats.txt"
+echo "host: $(hostname)" >> "$OUT/reference_stats.txt"
+cat "$OUT/reference_stats.txt"

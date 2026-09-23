@@ -78,3 +78,7 @@ You do **not** need admin rights, bioinformatics tools installed, or prior sched
   (checksummed in `00_getting_started/data.sha256`); larger samples are simulated with `wgsim` by a job.
 - Container versions are pinned in `containers.conf`.
 - `tests/lint.sh` runs static checks (no cluster needed); run it before committing changes.
+  `tests/lint.sh pt` (or `fr`, `es`) runs the same checks on a translation.
+- Translations (`../pt/`, `../fr/`, `../es/`) mirror sections 00 and 01 file for file, with only comments,
+  messages and text translated. When you change a script in 00, 01, `lib/` or the configs, make the same
+  change there.

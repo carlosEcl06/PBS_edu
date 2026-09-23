@@ -1,9 +1,10 @@
 #!/bin/bash
 # Static checks for the course material. Needs no cluster, no PBS, no containers.
-#   en/tests/lint.sh
+#   en/tests/lint.sh           checks en/
+#   en/tests/lint.sh pt        checks a translation instead (pt/, fr/, es/)
 # Exit status is the number of problems found.
 
-cd "$(dirname "$0")/.." || exit 1
+if [ -n "${1:-}" ]; then cd "$(dirname "$0")/../../$1" || exit 1; else cd "$(dirname "$0")/.." || exit 1; fi
 problems=0
 bad() { echo "PROBLEM: $*"; problems=$((problems + 1)); }
 

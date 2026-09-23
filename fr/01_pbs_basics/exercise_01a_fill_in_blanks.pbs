@@ -1,0 +1,45 @@
+#!/bin/bash
+# Exercice 1a -- complétez les trous (___) pour rendre ce job valide et fonctionnel.
+#
+# Objectif : compter les lectures et les bases de test_1.fastq.gz.
+#   * le job a besoin de 1 CPU, 1 Go de mémoire et 5 minutes au plus
+#   * stderr doit être fusionné dans stdout (un seul fichier de log)
+#   * un enregistrement FASTQ fait 4 lignes ; la séquence est la ligne 2 de chaque enregistrement
+#
+# Ensuite :  qsub exercise_01a_fill_in_blanks.pbs
+#            ./check_01a.sh
+#
+# Si une ligne #PBS est mal formée, qsub refuse le script tout de suite. Il nomme le
+# champ fautif, pas la ligne : "Illegal attribute or resource value select.ncpus"
+# désigne la valeur de ncpus= dans select=. Il signale un champ à la fois, vous
+# verrez donc peut-être plusieurs messages d'affilée. C'est normal : lisez, corrigez, resoumettez.
+# Rappel : les commentaires des lignes #PBS vont sur leur propre ligne, comme ici.
+
+# un nom court, lettres/chiffres/soulignés, commençant par une lettre (ex. : count_fq)
+#PBS -N ___
+# indiquez le nombre de CPU et les gigaoctets de mémoire
+#PBS -l select=1:ncpus=___:mem=___gb
+# cinq minutes = 00:05:00 (complétez le seul chiffre manquant)
+#PBS -l walltime=00:0___:00
+# les lettres de l'option qui fusionnent stdout et stderr sont "oe"
+#PBS -j ___
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+
+FASTQ="$DATA_DIR/real/test_1.fastq.gz"
+OUT="$WORKDIR/01_pbs_basics"
+mkdir -p "$OUT"
+
+# nombre total de lignes, divisé par le nombre de lignes par enregistrement
+lines=$(zcat "$FASTQ" | wc -l)
+reads=$(( lines / ___ ))
+
+# somme des longueurs de chaque ligne de séquence (length($0) d'awk donne la longueur d'une ligne)
+bases=$(zcat "$FASTQ" | awk 'NR % 4 == 2 { n += ___($0) } END { print n }')
+
+echo "reads: $reads"
+echo "bases: $bases"
+echo "$reads" > "$OUT/read_count.txt"
+echo "$bases" > "$OUT/base_count.txt"

@@ -1,0 +1,19 @@
+#!/bin/bash
+#PBS -N smoke_test
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+# Job minúsculo usado pelo check_env.sh. Ele verifica o que um nó de computação
+# precisa conseguir fazer no resto do curso: enxergar seus arquivos e rodar um container.
+
+cd "$PBS_O_WORKDIR" || { echo "SMOKE FAIL: não foi possível entrar no diretório de submissão"; exit 1; }
+source ../lib/edu.sh || { echo "SMOKE FAIL: não foi possível carregar lib/edu.sh"; exit 1; }
+edu_banner
+
+edu_preflight || { echo "SMOKE FAIL: este nó não enxerga os dados/imagens ou não tem runtime de containers"; exit 1; }
+"$CONTAINER_RUNTIME" --version
+edu_exec seqkit version || { echo "SMOKE FAIL: não foi possível rodar um container neste nó"; exit 1; }
+[ -s "$DATA_DIR/ref/genome.fasta" ] || { echo "SMOKE FAIL: a referência não pode ser lida deste nó"; exit 1; }
+
+echo "SMOKE OK em $(hostname)"

@@ -1,65 +1,93 @@
-> ⚠️ **Versión desactualizada.** Esta traducción describe la primera versión del curso y menciona un servidor concreto. El curso en inglés (`../en/`) fue reescrito y es la versión mantenida; esta carpeta se volverá a traducir más adelante.
+# PBS para bioinformática: un curso práctico
 
-# PBS_edu — planificación de trabajos en este clúster compartido
+> [!NOTE]
+> **Traducción en curso.** Las secciones **00** y **01** están traducidas y al día con el curso en inglés.
+> Las secciones **02 a 08** de momento solo existen [en inglés](../en/README.md): los enlaces de la ruta de
+> abajo llevan directamente a ellas, y puedes continuar allí con la misma configuración (ver el final de la
+> [sección 01](01_pbs_basics/README.md#siguiente-paso-continuar-en-inglés)).
 
-Una guía práctica para ejecutar trabajos de cómputo en este servidor de la forma
-correcta: a través del planificador PBS, nunca en el nodo de acceso, con contenedores
-fijados a versiones exactas. Los ejemplos aquí provienen de un pipeline real de
-filogenómica construido en este mismo servidor — incluidos algunos problemas
-encontrados en el camino.
+Aprende a ejecutar análisis reales en un cluster de cómputo compartido con PBS, haciéndolo. Cada ejercicio es un
+job que envías, que corre sobre datos de secuenciación reales (o simulados de forma realista) con herramientas
+reales, y que compruebas con un comprobador automático.
 
-## Por qué existe esta guía
+**Para quién es:** biólogos, estudiantes y analistas que conocen lo básico de Linux (`cd`, `ls`, `nano`) y acaban
+de recibir una cuenta en un cluster.
+**Qué sabrás hacer después:** escribir y enviar scripts de job, elegir CPU/memoria/tiempo con criterio, procesar
+muchas muestras en paralelo, encadenar pasos en un pipeline, ejecutar herramientas desde contenedores y averiguar
+por qué falló un job.
+**Tiempo:** unas 6–8 horas en total; cada sección se sostiene sola (45–60 min) y se apoya en la anterior.
 
-Este es un servidor compartido, usado por varias personas al mismo tiempo. El nodo de
-acceso (`pne2`) sirve para editar archivos, enviar trabajos y hacer orquestación
-ligera — **no para ejecutar nada que use CPU o memoria de verdad**. Los trabajos de
-todos pasan por PBS, que los distribuye entre los nodos de cómputo (`pne3` hasta
-`pne10`, la disponibilidad varía). Si ejecutas tu análisis directamente en `pne2` en
-lugar de enviarlo como trabajo, no solo estás rompiendo una regla — estás usando CPU
-que pertenece al nodo compartido de acceso/orquestación, del cual depende todo el mundo
-(incluida la gente que solo quiere hacer `cd` y revisar el estado de su trabajo).
+---
 
-La buena noticia: después de hacerlo dos o tres veces, enviar un trabajo PBS no es más
-difícil que ejecutar un comando directamente. Esta guía te lleva hasta ahí.
+## ¿Por qué un curso? La versión de un párrafo
 
-## Cómo usar esta carpeta
+Un cluster lo comparte mucha gente. Entras en un **nodo de login** para preparar el trabajo y envías **jobs** a un
+planificador (PBS), que los ejecuta en **nodos de cómputo** cuando hay recursos libres. Los análisis que necesitan
+CPU o memoria de verdad van en jobs, nunca en el nodo de login. Esa única regla, más un puñado de comandos
+(`qsub`, `qstat`, `qdel`), cubre el 90 % del uso diario. El resto del curso es el otro 10 %: hacerlo de forma
+eficiente y arreglarlo cuando se rompe.
 
-Recorre los directorios numerados en orden. Cada uno tiene:
-- un `README.md` explicando el concepto,
-- uno o más **ejemplos funcionales** que puedes enviar tal cual para ver cómo es un
-  trabajo real de principio a fin,
-- uno o más **ejercicios** — el mismo tipo de script, pero con partes importantes en
-  blanco (`___`), para que tú las completes y lo envíes por tu cuenta.
+## La ruta
 
-Nada aquí toca datos reales del proyecto. Cada ejercicio envía un trabajo trivial (se
-ejecuta en segundos, usa recursos mínimos) para que puedas iterar rápido sin
-preocuparte por consumir recursos compartidos mientras todavía estás aprendiendo.
+| # | Sección | Vas a | Datos / herramientas | Traducción |
+|---|---|---|---|---|
+| 00 | [Primeros pasos](00_getting_started/README.md) | conectarte, ejecutar la configuración, enviar tu primer job | referencia de SARS-CoV-2 + lecturas reales | ✅ al día |
+| 01 | [Lo básico de PBS](01_pbs_basics/README.md) | escribir, enviar, seguir y depurar un job | zcat, awk | ✅ al día |
+| 02 | [Contenedores](../en/02_containers/README.md) | ejecutar herramientas de bioinformática sin instalarlas | seqkit, FastQC | ⏳ solo en inglés |
+| 03 | [Recursos e hilos](../en/03_resources_threads/README.md) | medir un job y pedir las CPUs, memoria y tiempo adecuados | minimap2, samtools | ⏳ solo en inglés |
+| 04 | [Job arrays](../en/04_job_arrays/README.md) | un job por muestra, repetir solo los fallos | fastp, seqkit | ⏳ solo en inglés |
+| 05 | [Pipelines y dependencias](../en/05_pipelines_dependencies/README.md) | encadenar QC → alineamiento → resumen | fastp, minimap2, samtools | ⏳ solo en inglés |
+| 06 | [Jobs interactivos y nodos](../en/06_interactive_and_nodes/README.md) | probar en vivo en un nodo de cómputo, leer el estado de los nodos | pbsnodes | ⏳ solo en inglés |
+| 07 | [Resolución de problemas](../en/07_troubleshooting/README.md) | diagnosticar seis jobs rotos | logs, qstat | ⏳ solo en inglés |
+| 08 | [Nextflow](../en/08_nextflow/README.md) (opcional) | ejecutar y ampliar un pipeline de gestor de workflows | Nextflow | ⏳ solo en inglés |
 
-1. **`01_basicos_pbs/`** — enviar, revisar y cancelar un trabajo. Empieza aquí incluso
-   si ya usaste PBS/Slurm en otro lugar — las opciones y particularidades cambian de un
-   clúster a otro.
-2. **`02_seleccion_de_nodos/`** — revisar qué nodos de cómputo están realmente libres, y
-   fijar tu trabajo explícitamente en uno de ellos. Importa más aquí que en algunos
-   otros clústeres, por razones explicadas en esa sección.
-3. **`03_contenedores_apptainer/`** — ejecutar software desde un contenedor en vez de
-   pelear con la resolución de dependencias de `conda`/`module load`. Esta es la opción
-   recomendada por defecto para cualquier herramienta que no sea trivial de instalar.
-4. **`04_errores_comunes/`** — errores reales encontrados construyendo un pipeline de
-   producción en este mismo servidor, escritos como lecciones en vez de quedar solo
-   como conocimiento tácito.
-5. **`05_nextflow_avanzado/`** (opcional, una vez que lo básico se sienta natural) —
-   orquestar un pipeline de varias etapas (muchos trabajos, dependencias entre ellos)
-   con el ejecutor PBS de Nextflow en vez de encadenar `qsub` a mano.
+Haz la 00 primero y luego la 01–05 en orden. La 06 y la 07 se pueden hacer en cualquier momento después de la 01. La 08 es opcional.
 
-## La versión de un párrafo, si no lees nada más
+## Qué necesitas
 
-Nunca ejecutes cómputo real en `pne2`. Antes de enviar un trabajo, revisa qué nodos de
-cómputo están realmente libres (`pbsnodes <nodo>`) en vez de asumirlo — este servidor
-no siempre permite excluir un nodo específico, solo fijarse *en* uno, así que si no
-revisas antes puedes terminar en cola detrás del trabajo de otra persona, o asignado
-silenciosamente a un nodo con un problema conocido. Prefiere contenedores Apptainer
-fijados a una versión exacta en vez de `conda`/paquetes del sistema para cualquier cosa
-más allá de un script de una línea. Y cuando un trabajo basado en contenedor no pueda
-encontrar un archivo que sí es visible desde tu shell de acceso, verifica si la ruta
-realmente está montada (bind-mount) dentro del contenedor antes de asumir que tus datos
-desaparecieron — ver `04_errores_comunes/`.
+- Una cuenta en un cluster PBS (OpenPBS o PBS Professional) y una terminal con `ssh`.
+- `git` (u otra forma de copiar esta carpeta al cluster), `bash`.
+- Apptainer o Singularity en el cluster (habitual en clusters académicos; el script de configuración te avisa si falta).
+- Alrededor de 1 GB de disco en un directorio que vean los nodos de cómputo, y acceso a internet desde el nodo de
+  login para las descargas iniciales.
+
+**No** necesitas permisos de administrador, herramientas de bioinformática instaladas ni experiencia previa con
+planificadores.
+
+## Cómo funciona cada sección
+
+1. Lee el `README.md` de la sección (objetivos, conceptos, tabla "si algo sale mal").
+2. Ejecuta los **ejemplos** (`example_*.pbs`): funcionan tal cual. Lee sus comentarios.
+3. Haz los **ejercicios**: `exercise_*.pbs` (rellenar huecos, arreglar un job roto o escribir uno desde cero).
+4. Ejecuta el **comprobador** de la sección (`check_*.sh`). Inspecciona las salidas reales de tus jobs y te dice qué
+   está mal y dónde mirar. Los comprobadores nunca cambian nada.
+5. Compara con `solutions/` solo después de intentarlo.
+
+**Convenciones que recordar**
+- Envía los jobs **desde el directorio de la sección**: `cd 01_pbs_basics; qsub example_count_reads.pbs`.
+- Las particularidades de tu cluster están en `site.conf` (lo escribe `00_getting_started/setup.sh`). Ningún
+  script fija una cola, un nodo o una ruta. Mira `examples/site.pne.conf` para ver un ejemplo completo.
+- `lib/edu.sh` reúne pequeñas funciones compartidas (cortas, legibles, merece la pena leerlas).
+- Los logs de los jobs aparecen en el directorio de envío, con el nombre `<nombredeljob>.o<jobid>`, cuando el job termina.
+- Los archivos de resultado que crean tus jobs van a `$WORKDIR` (de `site.conf`), una subcarpeta por sección.
+  Dentro de cada directorio de sección, **`results/`** es un atajo a esa carpeta (se crea automáticamente):
+  `ls results/`. El propio `$WORKDIR` solo está definido después de `source lib/edu.sh`.
+- Los nombres de archivos y carpetas son los mismos que en la versión en inglés, para que los comandos sean
+  idénticos en las dos.
+
+## Extras
+
+- [Chuleta](../en/CHEATSHEET.md) (en inglés): los comandos y la anatomía de un script en una página.
+- [Glosario](../en/GLOSSARY.md) (en inglés): todos los términos usados, en lenguaje sencillo.
+
+## Notas para instructores y mantenedores
+
+- La versión en inglés (`../en/`) es la referencia; esta carpeta traduce comentarios, mensajes y textos, sin
+  cambiar el comportamiento de los scripts.
+- Los comprobadores calculan los valores esperados a partir de los propios datos (nada está fijado a un conjunto
+  de datos).
+- Datos: el genoma de referencia y los 100 pares de lecturas reales vienen de los test-datasets públicos de
+  nf-core (con sumas de comprobación en `00_getting_started/data.sha256`); las muestras más grandes las simula un
+  job con `wgsim`.
+- Las versiones de los contenedores están fijadas en `containers.conf`.
+- `../en/tests/lint.sh es` ejecuta las comprobaciones estáticas en esta carpeta (no hace falta cluster).

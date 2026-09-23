@@ -1,0 +1,25 @@
+#!/bin/bash
+# Solución del ejercicio 1a. Envíala desde el directorio de la sección:
+#   qsub solutions/exercise_01a.pbs
+
+#PBS -N count_fq
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+
+FASTQ="$DATA_DIR/real/test_1.fastq.gz"
+OUT="$WORKDIR/01_pbs_basics"
+mkdir -p "$OUT"
+
+lines=$(zcat "$FASTQ" | wc -l)
+reads=$(( lines / 4 ))
+bases=$(zcat "$FASTQ" | awk 'NR % 4 == 2 { n += length($0) } END { print n }')
+
+echo "reads: $reads"
+echo "bases: $bases"
+echo "$reads" > "$OUT/read_count.txt"
+echo "$bases" > "$OUT/base_count.txt"

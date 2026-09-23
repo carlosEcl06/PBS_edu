@@ -1,0 +1,38 @@
+#!/bin/bash
+# Exercice 1b -- ce job est cassé. Il contient TROIS bugs distincts.
+#
+# Il devrait construire un histogramme des longueurs de lecture de test_1.fastq.gz
+# et écrire "finished" dans un fichier marqueur à la fin.
+#
+# Votre méthode (la même que pour les vrais problèmes) :
+#   1. qsub exercise_01b_fix_the_job.pbs
+#   2. Lisez ce qui se passe : l'erreur de qsub, ou le fichier de log (fix_me.o<jobid>),
+#      ou qstat -xf <jobid> (regardez Exit_status).
+#   3. Corrigez UN bug, resoumettez, recommencez.
+# Quand le job réussit :   ./check_01b.sh
+#
+# Des indices sont dans solutions/exercise_01b.pbs, mais essayez sans. Si un job
+# est bloqué ou se comporte mal, tuez-le avec :  qdel <jobid>
+
+#PBS -N fix_me
+#PBS -l select=1:ncpu=1:mem=1gb
+#PBS -l walltime=00:00:10
+#PBS -j oe
+
+source ../lib/edu.sh || exit 1
+edu_banner
+
+FASTQ="$DATA_DIR/real/test_1.fastq.gz"
+OUT="$WORKDIR/01_pbs_basics"
+mkdir -p "$OUT"
+
+echo "Construction de l'histogramme des longueurs de lecture..."
+zcat "$FASTQ" | awk 'NR % 4 == 2 { print length($0) }' | sort -n | uniq -c \
+    | awk '{ print $2 "\t" $1 }' > "$OUT/length_histogram.tsv"
+
+# joue le rôle d'une étape lente (un gros alignement, un disque lent...)
+echo "Étape lente en cours..."
+sleep 20
+
+echo "finished" > "$OUT/length_hist.done"
+echo "Terminé."

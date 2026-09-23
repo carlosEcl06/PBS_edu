@@ -1,0 +1,42 @@
+#!/bin/bash
+#PBS -N make_samples
+#PBS -l select=1:ncpus=2:mem=2gb
+#PBS -l walltime=00:30:00
+#PBS -j oe
+
+# Seu primeiro job de bioinformática: simula reads Illumina paired-end para
+# N_SAMPLES amostras a partir da referência do SARS-CoV-2, usando o wgsim (um
+# simulador de reads real, do projeto samtools) dentro de um container.
+#
+# Cada amostra recebe sua própria semente aleatória, então cada uma carrega
+# mutações um pouco diferentes. As mutações que o wgsim introduziu são salvas num
+# arquivo "truth". Dados simulados são usados a partir da seção 03 porque podem
+# ter o tamanho que você precisar, não exigem download e são iguais para todos.
+#
+# Submeta a partir deste diretório:   qsub make_samples.pbs
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+edu_preflight || exit 1
+
+REF="$DATA_DIR/ref/genome.fasta"
+OUTDIR="$DATA_DIR/samples"
+mkdir -p "$OUTDIR"
+: > "$OUTDIR/samples.tsv"
+
+for i in $(seq 1 "$N_SAMPLES"); do
+    id="$(printf 'sample_%02d' "$i")"
+    r1="$OUTDIR/${id}_R1.fastq"
+    r2="$OUTDIR/${id}_R2.fastq"
+    echo "[$(date +%T)] simulando $id ($READS_PER_SAMPLE pares de reads)"
+    # o wgsim imprime na saída padrão as mutações que introduziu
+    edu_exec wgsim -N "$READS_PER_SAMPLE" -1 150 -2 150 -r 0.002 -e 0.005 -S "$((1000 + i))" \
+        "$REF" "$r1" "$r2" > "$OUTDIR/${id}.truth_mutations.txt" || exit 1
+    gzip -f "$r1" "$r2"
+    printf '%s\t%s\t%s\n' "$id" "$r1.gz" "$r2.gz" >> "$OUTDIR/samples.tsv"
+done
+
+echo "[$(date +%T)] pronto. Planilha de amostras:"
+cat "$OUTDIR/samples.tsv"
+du -sh "$OUTDIR"

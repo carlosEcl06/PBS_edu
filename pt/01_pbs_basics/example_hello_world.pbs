@@ -1,0 +1,27 @@
+#!/bin/bash
+# O menor job útil. Submeta a partir deste diretório:  qsub example_hello_world.pbs
+
+# nome mostrado pelo qstat
+#PBS -N hello
+# um chunk com 1 CPU e 1 GB de memória
+#PBS -l select=1:ncpus=1:mem=1gb
+# desiste depois de 2 minutos
+#PBS -l walltime=00:02:00
+# coloca as mensagens de erro no mesmo log da saída normal
+#PBS -j oe
+
+# Um job NÃO começa onde você rodou o qsub. Ele começa na sua home:
+echo "Diretório quando o job começou: $(pwd)"
+cd "$PBS_O_WORKDIR" || exit 1
+echo "Diretório depois do cd:         $(pwd)"
+
+echo "Olá do nó de computação:        $(hostname)"
+echo "Id do job:                      $PBS_JOBID"
+echo "CPUs que o PBS deu a este job:  ${NCPUS:-desconhecido}"
+echo "Data:                           $(date)"
+
+# Cuidado: isto mostra a memória do nó INTEIRO, não o 1 GB que você pediu.
+free -h
+
+sleep 5
+echo "Pronto."

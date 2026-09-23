@@ -1,0 +1,19 @@
+#!/bin/bash
+#PBS -N smoke_test
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:05:00
+#PBS -j oe
+
+# Job diminuto que usa check_env.sh. Comprueba lo que un nodo de cómputo debe poder
+# hacer durante el resto del curso: ver tus archivos y ejecutar un contenedor.
+
+cd "$PBS_O_WORKDIR" || { echo "SMOKE FAIL: no se pudo entrar al directorio de envío"; exit 1; }
+source ../lib/edu.sh || { echo "SMOKE FAIL: no se pudo cargar lib/edu.sh"; exit 1; }
+edu_banner
+
+edu_preflight || { echo "SMOKE FAIL: este nodo no ve los datos/imágenes o no tiene runtime de contenedores"; exit 1; }
+"$CONTAINER_RUNTIME" --version
+edu_exec seqkit version || { echo "SMOKE FAIL: no se pudo ejecutar un contenedor en este nodo"; exit 1; }
+[ -s "$DATA_DIR/ref/genome.fasta" ] || { echo "SMOKE FAIL: la referencia no se puede leer desde este nodo"; exit 1; }
+
+echo "SMOKE OK en $(hostname)"

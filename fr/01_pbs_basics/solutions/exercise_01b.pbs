@@ -1,0 +1,38 @@
+#!/bin/bash
+# Solution de l'exercice 1b. Les trois bugs, dans l'ordre où vous les rencontrez :
+#
+#   1. "ncpu" n'est pas une ressource PBS : c'est "ncpus". qsub rejette le script
+#      dès la soumission avec un message du genre "Unknown resource".
+#   2. Le script n'a jamais fait `cd "$PBS_O_WORKDIR"`. Les jobs démarrent dans
+#      $HOME, donc le chemin relatif ../lib/edu.sh pointe au mauvais endroit. Le job
+#      démarre puis meurt dans la première seconde ; le log dit "No such file or directory".
+#   3. walltime=00:00:10 est plus court que l'« étape lente » de 20 secondes du script.
+#      PBS tue le job quand le temps est écoulé : aucun message d'erreur de votre
+#      script, le log s'arrête simplement, et `qstat -xf <jobid>` affiche
+#      Exit_status = 271 (256 + signal 15). Le fichier marqueur n'est jamais écrit.
+#
+# Leçon pour le vrai travail : un job tué par le walltime ressemble à un job qui
+# « s'est arrêté tout seul ». Vérifiez toujours Exit_status et les dernières lignes du log.
+
+#PBS -N fix_me
+#PBS -l select=1:ncpus=1:mem=1gb
+#PBS -l walltime=00:02:00
+#PBS -j oe
+
+cd "$PBS_O_WORKDIR" || exit 1
+source ../lib/edu.sh || exit 1
+edu_banner
+
+FASTQ="$DATA_DIR/real/test_1.fastq.gz"
+OUT="$WORKDIR/01_pbs_basics"
+mkdir -p "$OUT"
+
+echo "Construction de l'histogramme des longueurs de lecture..."
+zcat "$FASTQ" | awk 'NR % 4 == 2 { print length($0) }' | sort -n | uniq -c \
+    | awk '{ print $2 "\t" $1 }' > "$OUT/length_histogram.tsv"
+
+echo "Étape lente en cours..."
+sleep 20
+
+echo "finished" > "$OUT/length_hist.done"
+echo "Terminé."
