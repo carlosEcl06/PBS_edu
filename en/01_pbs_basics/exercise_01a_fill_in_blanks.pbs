@@ -9,8 +9,10 @@
 # Then:   qsub exercise_01a_fill_in_blanks.pbs
 #         ./check_01a.sh
 #
-# If a #PBS line is malformed, qsub refuses the script immediately and tells you
-# which line. That is normal: read the message, fix, resubmit.
+# If a #PBS line is malformed, qsub refuses the script immediately. It names the
+# bad field, not the line: "Illegal attribute or resource value select.ncpus"
+# means the ncpus= value inside select=. It reports one field at a time, so you
+# may see several messages in a row. That is normal: read the message, fix, resubmit.
 # Remember: comments on #PBS lines must be on their own line, as here.
 
 # a short name, letters/digits/underscore, starting with a letter (e.g. count_fq)
